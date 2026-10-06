@@ -1,0 +1,91 @@
+/* ================ Shell — sticky footer ================ */
+
+.shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================ Header ================ */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-surface-2);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.logoAccent {
+  color: var(--color-accent);
+}
+
+/* ================ Navigation ================ */
+
+.nav {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.navLink {
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.navLink:hover {
+  color: var(--color-text);
+  background: var(--color-surface-2);
+}
+
+.active {
+  color: var(--color-link);
+  font-weight: 700;
+}
+
+/* ================ Main + footer ================ */
+
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding: var(--space-md);
+}
+
+.footer {
+  padding: var(--space-md);
+  border-top: 1px solid var(--color-surface-2);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+/* ================ Tablet and up ================ */
+
+@media (min-width: 768px) {
+  .header {
+    padding: var(--space-md) var(--space-lg);
+  }
+
+  .main {
+    padding: var(--space-lg);
+  }
+}
