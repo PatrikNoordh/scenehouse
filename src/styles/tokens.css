@@ -1,0 +1,52 @@
+/* Design tokens — the single source of truth for colors, spacing and radii.
+   Dark is the default theme; light overrides only what changes. */
+
+:root {
+  color-scheme: dark;
+
+  /* ================ Colors — dark (default) ================ */
+
+  --color-bg: #000814;
+  --color-surface: #001d3d;
+  --color-surface-2: #003566;
+  --color-accent: #ffc300;
+  --color-accent-hi: #ffd60a;
+  --color-on-accent: #000814;
+  --color-text: #ffffff;
+  --color-text-muted: #a9b8cc;
+  --color-link: #ffc300;
+  --color-success: #3ddc97;
+  --color-danger: #ff6b6b;
+
+  /* ================ Typography ================ */
+
+  --font-body: Inter, system-ui, sans-serif;
+
+  /* ================ Radius ================ */
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  /* ================ Spacing — 8px grid ================ */
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+
+    --color-bg: #f5f7fa;
+    --color-surface: #ffffff;
+    --color-surface-2: #e3eaf3;
+    --color-text: #000814;
+    --color-text-muted: #4a5a70;
+    --color-link: #003566;
+  }
+}
