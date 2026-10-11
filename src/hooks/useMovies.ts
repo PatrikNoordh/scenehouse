@@ -1,0 +1,117 @@
+/**
+ * Loads popular movies page by page for the catalog.
+ *
+ * Keeps the four view states in one place — loading, error, empty (no movies)
+ * and success — so the page only decides what to show and never fetches itself.
+ */
+
+import { useEffect, useState } from "react";
+import type { Movie } from "../types/tmdb";
+import { getPopularMovies } from "../api/tmdb";
+
+// TMDb refuses pages above 500, even when totalPages reports more.
+const MAX_PAGES = 500;
+
+// Standard catalog error copy. Never shown: err.message (it can be technical).
+const ERROR_MESSAGE = "Could not load movies. Try again.";
+
+// What the hook returns. movies.length === 0 with no error and not loading = empty state.
+export type UseMoviesResult = {
+  movies: Movie[];
+  isLoading: boolean;
+  error: string | null;
+  hasMore: boolean;
+  loadMore: () => void;
+  reload: () => void;
+};
+
+/**
+ * Appends the next page to the list, skipping movies that are already in it.
+ * TMDb's popular list can shift between requests, so a movie may appear on
+ * two pages — duplicates would also give React two items with the same key.
+ * Returns a new array; React only notices state changes when it gets a new one.
+ * @param current - The movies loaded so far.
+ * @param next - The movies from the page that just arrived.
+ * @returns current followed by every movie from next whose id isn't in current.
+ */
+function appendUnique(current: Movie[], next: Movie[]): Movie[] {
+  const seen = new Set(current.map((movie) => movie.id));
+
+  return [...current, ...next.filter((movie) => !seen.has(movie.id))];
+}
+
+/**
+ * Popular movies for the catalog, with "Load more" and "Try again".
+ *
+ * - The effect fetches the current page whenever `page` or `attempt` changes.
+ *   `attempt` is never displayed — increasing it re-runs the effect, so
+ *   reload() retries without duplicating the fetch code.
+ * - Loading is set where a request starts (initial state, loadMore, reload),
+ *   not at the top of the effect: React then renders the right state in one
+ *   pass, and the react-hooks/set-state-in-effect lint rule stays green.
+ * - The AbortController cancels the request on unmount or when the effect
+ *   re-runs. AbortError is ignored, and the `aborted` checks make sure no state
+ *   is set after cleanup — also for cached answers, which resolve instantly.
+ * - Page 1 replaces the list; later pages are appended without duplicates.
+ *
+ * @returns The movies so far, loading/error state, and the loadMore/reload actions.
+ */
+export function useMovies(): UseMoviesResult {
+  const [movies, setMovies] = useState<Movie[]>([]);
+
+  const [page, setPage] = useState(1);
+
+  const [totalPages, setTotalPages] = useState(0);
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  const [error, setError] = useState<string | null>(null);
+
+  const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    getPopularMovies(page, controller.signal)
+      .then((result) => {
+        if (controller.signal.aborted) return;
+
+        setMovies((current) =>
+          page === 1 ? result.results : appendUnique(current, result.results),
+        );
+
+        setTotalPages(Math.min(result.totalPages, MAX_PAGES));
+
+        setIsLoading(false);
+      })
+
+      .catch((err: unknown) => {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+
+        if (controller.signal.aborted) return;
+
+        setError(ERROR_MESSAGE);
+        setIsLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [page, attempt]);
+
+  const hasMore = page < totalPages;
+
+  function loadMore() {
+    if (isLoading || !hasMore) return;
+
+    setIsLoading(true);
+    setError(null);
+    setPage((current) => current + 1);
+  }
+
+  function reload() {
+    setIsLoading(true);
+    setError(null);
+    setAttempt((current) => current + 1);
+  }
+
+  return { movies, isLoading, error, hasMore, loadMore, reload };
+}
