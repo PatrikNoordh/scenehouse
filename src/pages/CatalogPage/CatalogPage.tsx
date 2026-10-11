@@ -1,3 +1,7 @@
+/**
+ * The catalog page ("/"): popular movies in a responsive grid with "Load more".
+ */
+
 import { paths } from "../../routes";
 
 import { useMovies } from "../../hooks/useMovies";
@@ -9,6 +13,16 @@ import MovieCard from "../../components/MovieCard/MovieCard";
 
 import styles from "./CatalogPage.module.css";
 
+/**
+ * Gets the data from useMovies and picks which state to show — it never fetches.
+ *
+ * - No movies yet: exactly one of Loader (loading), ErrorMessage (failed) or
+ *   EmptyState (loaded, but zero results).
+ * - Some movies: the grid is always shown. A failed "Load more" shows its error
+ *   below the grid, so earlier pages never disappear; otherwise the
+ *   "Load more" button shows while there are more pages.
+ * - The page builds each card's link with paths.movie(id) — cards don't build URLs.
+ */
 export default function CatalogPage() {
   const { movies, isLoading, error, hasMore, loadMore, reload } = useMovies();
 
