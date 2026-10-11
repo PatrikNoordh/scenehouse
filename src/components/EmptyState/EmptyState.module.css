@@ -1,0 +1,13 @@
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xl) var(--space-md);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.icon {
+  font-size: 2.5rem;
+}
