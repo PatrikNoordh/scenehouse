@@ -329,7 +329,7 @@ export async function getMovieDetails(
   return normalizeMovieDetails(raw);
 }
 
-export async function getRecomendations(
+export async function getRecommendations(
   id: number,
   page = 1,
   signal?: AbortSignal,
