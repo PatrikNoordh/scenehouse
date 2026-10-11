@@ -1,3 +1,14 @@
+/**
+ * TMDb API client — the ONLY file in the app that talks to TMDb.
+ *
+ * Builds request URLs, adds the API key, caches answers in memory, turns
+ * failures into readable TmdbErrors, and converts TMDb's raw JSON into the
+ * app's own types (src/types/tmdb.ts). Nothing outside src/api/ ever sees
+ * TMDb's original response format — if TMDb changes, only this file changes.
+ *
+ * Sections: Images · Errors · Fetch + cache · Normalize · Public API
+ */
+
 import type {
   CastMember,
   CrewMember,
@@ -28,14 +39,24 @@ import { TMDB_LANGUAGE } from "../config";
 // ================ Images ================
 
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
+
+// Served from public/ — shown whenever TMDb has no image.
 const PLACEHOLDER_IMAGE_URL = "/placeholder.svg";
 
+// What an image is FOR → TMDb's size code. Record<ImageSize, string> fails the
+// build if a new ImageSize is added without an entry here.
 const IMAGE_WIDTHS: Record<ImageSize, string> = {
   profile: "w185",
   poster: "w500",
   backdrop: "w1280",
 };
 
+/**
+ * Builds a TMDb image URL — the only place image URLs are made.
+ * @param path - The image path from TMDb (starts with "/"), or null if there is none.
+ * @param size - What the image is for; mapped to TMDb's size code.
+ * @returns The full image URL, or the placeholder when path is null or empty.
+ */
 export function getImageUrl(path: string | null, size: ImageSize): string {
   if (!path) return PLACEHOLDER_IMAGE_URL;
   return `${IMAGE_BASE_URL}/${IMAGE_WIDTHS[size]}${path}`;
@@ -43,9 +64,17 @@ export function getImageUrl(path: string | null, size: ImageSize): string {
 
 // ================ Errors ================
 
+/**
+ * An Error that also carries the HTTP status, so a page can tell "not found"
+ * (404) apart from "network down" (null) by number instead of by message text.
+ */
 export class TmdbError extends Error {
   status: number | null;
 
+  /**
+   * @param message - A readable message, safe to show (never contains the URL or key).
+   * @param status - The HTTP status (401, 404, 429, 5xx…), or null if there was no response.
+   */
   constructor(message: string, status: number | null) {
     super(message);
     this.name = "TmdbError";
@@ -53,11 +82,16 @@ export class TmdbError extends Error {
   }
 }
 
+// Messages for failures without an HTTP status.
 const MISSING_KEY_MESSAGE =
   "The TMDb API key is missing. Add VITE_TMDB_KEY to your .env file.";
 const NETWORK_ERROR_MESSAGE =
   "Could not reach TMDb. Check your internet connection.";
 
+/**
+ * Turns an HTTP status code into a message a person can understand.
+ * @param status - The HTTP status of a failed response.
+ */
 function messageForStatus(status: number): string {
   if (status === 401) return "The TMDb API key is invalid.";
   if (status === 404) return "The requested movie could not be found.";
@@ -72,16 +106,28 @@ function messageForStatus(status: number): string {
 
 const API_BASE_URL = "https://api.themoviedb.org/3";
 
+// Extra query parameters, e.g. { page: 2, query: 'batman' }.
 type QueryParams = Record<string, string | number>;
 
+// In-memory cache: request (path + params) → parsed JSON. Lives until the page
+// reloads. Never written to localStorage (stale data; TMDb's terms forbid it).
 const cache = new Map<string, unknown>();
 
-// The ONE function that calls TMDb. Every public function below goes through it.
-// - path:   the endpoint, e.g. '/movie/popular'
-// - params: extra query parameters (optional, defaults to none)
-// - signal: lets a hook cancel the request when the user leaves the page (optional)
-// Returns the parsed JSON, still `unknown` — the normalize functions check it.
-// Throws a TmdbError with a readable message if anything goes wrong
+/**
+ * The ONE function that calls TMDb — every public function goes through it.
+ *
+ * - The cache key is built BEFORE the API key is added, so the key is never stored.
+ * - Only successful answers are cached, so "Try again" really calls TMDb again.
+ * - fetch does not throw on 404/500, so response.ok is checked explicitly.
+ * - A cancelled request (AbortError) is passed on unchanged so the hook can ignore it.
+ * - Never log the request URL — it contains the API key.
+ *
+ * @param path - The endpoint, e.g. '/movie/popular'.
+ * @param params - Extra query parameters (language and api_key are added here).
+ * @param signal - Lets a hook cancel the request when the user leaves the page.
+ * @returns The parsed JSON, still `unknown` — the normalize functions check it.
+ * @throws {TmdbError} Missing or invalid key, HTTP error, or network failure.
+ */
 async function tmdbFetch(
   path: string,
   params: QueryParams = {},
@@ -123,18 +169,31 @@ async function tmdbFetch(
 }
 
 // ================ Normalize: raw TMDb JSON → app types ================
-// TMDb's JSON is `unknown` until these functions have checked it.
-// Each one reads every field through guards.ts, so a missing or wrong field
-// becomes a safe default ('' / null / 0 / []) instead of crashing the app.
-// TMDb's snake_case names (poster_path) become our camelCase names (posterPath) here.
+// TMDb's JSON is `unknown` until these functions have checked it. Every field is
+// read through guards.ts, so a missing or wrong field becomes a safe default
+// ('' / null / 0 / []) instead of crashing the app. TMDb's snake_case names
+// (poster_path) become our camelCase names (posterPath) here.
 
 const UNEXPECTED_RESPONSE_MESSAGE = "TMDb sent an unexpected response.";
 
+/**
+ * Checks that the top level of an answer is an object.
+ * @param raw - The parsed JSON from tmdbFetch.
+ * @throws {TmdbError} If it isn't an object — nothing could be read from it.
+ */
 function toRecord(raw: unknown): Record<string, unknown> {
   if (!isRecord(raw)) throw new TmdbError(UNEXPECTED_RESPONSE_MESSAGE, null);
   return raw;
 }
 
+/**
+ * Reads the list at obj[key], keeps only real objects (isRecord is a type
+ * guard, so each item is narrowed) and normalizes each one.
+ * T is inferred from `normalize`: pass normalizeMovie, get Movie[].
+ * @param obj - The object that holds the list.
+ * @param key - The name of the list, e.g. 'results' or 'cast'.
+ * @param normalize - Turns one raw item into an app type.
+ */
 function normalizeList<T>(
   obj: Record<string, unknown>,
   key: string,
@@ -143,6 +202,12 @@ function normalizeList<T>(
   return readArray(obj, key).filter(isRecord).map(normalize);
 }
 
+/**
+ * One movie as it appears in lists (popular, search, discover, recommendations).
+ * genreIds keeps only real numbers; TypeScript infers number[] from the
+ * typeof check, so no `as` cast is needed. Exported for unit tests.
+ * @param raw - One raw movie object from TMDb.
+ */
 export function normalizeMovie(raw: Record<string, unknown>): Movie {
   return {
     id: readNumber(raw, "id"),
@@ -158,6 +223,7 @@ export function normalizeMovie(raw: Record<string, unknown>): Movie {
   };
 }
 
+/** @param raw - One raw genre object from TMDb. */
 function normalizeGenre(raw: Record<string, unknown>): Genre {
   return {
     id: readNumber(raw, "id"),
@@ -165,6 +231,7 @@ function normalizeGenre(raw: Record<string, unknown>): Genre {
   };
 }
 
+/** @param raw - One raw cast entry from a movie's credits. */
 function normalizeCastMember(raw: Record<string, unknown>): CastMember {
   return {
     id: readNumber(raw, "id"),
@@ -174,6 +241,7 @@ function normalizeCastMember(raw: Record<string, unknown>): CastMember {
   };
 }
 
+/** @param raw - One raw crew entry from a movie's credits. */
 function normalizeCrewMember(raw: Record<string, unknown>): CrewMember {
   return {
     id: readNumber(raw, "id"),
@@ -183,6 +251,7 @@ function normalizeCrewMember(raw: Record<string, unknown>): CrewMember {
   };
 }
 
+/** @param raw - One raw video entry (trailer, teaser, clip…). */
 function normalizeVideo(raw: Record<string, unknown>): Video {
   return {
     id: readString(raw, "id"),
@@ -194,6 +263,12 @@ function normalizeVideo(raw: Record<string, unknown>): Video {
   };
 }
 
+/**
+ * One person from a person search. TMDb's known_for mixes movies and TV shows:
+ * the RAW items are filtered on media_type first, then normalized — a
+ * normalized Movie no longer has media_type, so the order matters.
+ * @param raw - One raw person object from TMDb.
+ */
 function normalizePerson(raw: Record<string, unknown>): Person {
   return {
     id: readNumber(raw, "id"),
@@ -207,6 +282,13 @@ function normalizePerson(raw: Record<string, unknown>): Person {
   };
 }
 
+/**
+ * Flattens TMDb's nested release_dates into
+ * [{ country: 'SE', certification: '15' }, …], so the age rating is a simple lookup.
+ * A country can have several releases; the first one with a rating is used, and
+ * countries without any rating are left out.
+ * @param releaseDates - The raw release_dates object from the detail answer.
+ */
 function normalizeCertification(
   releaseDates: Record<string, unknown>,
 ): ReleaseCertification[] {
@@ -223,6 +305,13 @@ function normalizeCertification(
     .filter((item) => item.certification !== "");
 }
 
+/**
+ * One page of results from any paged endpoint. Exported for unit tests.
+ * @param raw - The parsed JSON from tmdbFetch.
+ * @param normalize - Turns one raw item into an app type (normalizeMovie, normalizePerson…).
+ * @returns PagedResponse<T>, where T is whatever `normalize` returns.
+ * @throws {TmdbError} If the answer isn't an object.
+ */
 export function normalizePage<T>(
   raw: unknown,
   normalize: (item: Record<string, unknown>) => T,
@@ -236,6 +325,19 @@ export function normalizePage<T>(
   };
 }
 
+/**
+ * The full detail page — the answer to /movie/{id}?append_to_response=…
+ *
+ * - Each appended part arrives as its own nested object (data.credits, data.videos…).
+ *   readRecord returns {} if a part is missing, so the list becomes [] instead of crashing.
+ * - Starts from normalizeMovie, then overrides genreIds from the full "genres"
+ *   objects (the detail answer has no genre_ids). The override must stay AFTER the spread.
+ * - TMDb sends runtime 0 when unknown; `|| null` (not ??) turns 0 into null.
+ *
+ * Exported for unit tests.
+ * @param raw - The parsed JSON from tmdbFetch.
+ * @throws {TmdbError} If the answer isn't an object.
+ */
 export function normalizeMovieDetails(raw: unknown): MovieDetails {
   const data = toRecord(raw);
   const genres = normalizeList(data, "genres", normalizeGenre);
@@ -266,7 +368,12 @@ export function normalizeMovieDetails(raw: unknown): MovieDetails {
 }
 
 // ================ Public API ================
+// The only functions other files use: tmdbFetch → normalize → app types.
+// Every one throws a TmdbError on failure (see tmdbFetch), and takes an optional
+// AbortSignal last so a hook can cancel the request.
 
+// Our sort names → TMDb's sort_by values, so pages and URLs never use TMDb's
+// format. Record<SortOption, string> fails the build if a SortOption is unmapped.
 const SORT_PARAMS: Record<SortOption, string> = {
   popular: "popularity.desc",
   rating: "vote_average.desc",
@@ -274,6 +381,11 @@ const SORT_PARAMS: Record<SortOption, string> = {
   title: "original_title.asc",
 };
 
+/**
+ * Popular movies right now — the catalog's default list.
+ * @param page - Page number, starting at 1.
+ * @param signal - Lets a hook cancel the request.
+ */
 export async function getPopularMovies(
   page = 1,
   signal?: AbortSignal,
@@ -282,6 +394,12 @@ export async function getPopularMovies(
   return normalizePage(raw, normalizeMovie);
 }
 
+/**
+ * Search movies by title. Adult titles are excluded explicitly (also TMDb's default).
+ * @param query - The search text.
+ * @param page - Page number, starting at 1.
+ * @param signal - Lets a hook cancel the request.
+ */
 export async function searchMovies(
   query: string,
   page = 1,
@@ -295,11 +413,23 @@ export async function searchMovies(
   return normalizePage(raw, normalizeMovie);
 }
 
+/**
+ * All movie genres, for the genre filter. Not paged.
+ * @param signal - Lets a hook cancel the request.
+ */
 export async function getGenres(signal?: AbortSignal): Promise<Genre[]> {
   const raw = await tmdbFetch("/genre/movie/list", {}, signal);
   return normalizeList(toRecord(raw), "genres", normalizeGenre);
 }
 
+/**
+ * Browse movies by genre and sort order (no search text).
+ * The "rating" sort requires at least 200 votes, so it isn't filled with
+ * films that have a single 10/10 vote.
+ * @param filters - Genre (null = all genres) and our own sort name.
+ * @param page - Page number, starting at 1.
+ * @param signal - Lets a hook cancel the request.
+ */
 export async function discoverMovies(
   filters: DiscoverFilters,
   page = 1,
@@ -317,6 +447,13 @@ export async function discoverMovies(
   return normalizePage(raw, normalizeMovie);
 }
 
+/**
+ * Everything the detail page needs — details, credits, videos, age ratings
+ * and recommendations — in ONE request.
+ * @param id - The TMDb movie id (a number — convert useParams() first).
+ * @param signal - Lets a hook cancel the request.
+ * @throws {TmdbError} With status 404 if the movie doesn't exist.
+ */
 export async function getMovieDetails(
   id: number,
   signal?: AbortSignal,
@@ -329,6 +466,12 @@ export async function getMovieDetails(
   return normalizeMovieDetails(raw);
 }
 
+/**
+ * More recommendations than the first page included in getMovieDetails.
+ * @param id - The TMDb movie id.
+ * @param page - Page number, starting at 1.
+ * @param signal - Lets a hook cancel the request.
+ */
 export async function getRecommendations(
   id: number,
   page = 1,
@@ -338,6 +481,13 @@ export async function getRecommendations(
   return normalizePage(raw, normalizeMovie);
 }
 
+/**
+ * Search actors and directors by name.
+ * Each person's knownFor contains movies only.
+ * @param name - The name to search for.
+ * @param page - Page number, starting at 1.
+ * @param signal - Lets a hook cancel the request.
+ */
 export async function searchPerson(
   name: string,
   page = 1,
