@@ -443,6 +443,12 @@ export async function discoverMovies(
   if (filters.genreId !== null) params.with_genres = filters.genreId;
   if (filters.sort === "rating") params["vote_count.gte"] = 200;
 
+  if (filters.sort === "newest") {
+    params["release_date.lte"] = new Date().toISOString().slice(0, 10);
+
+    params["vote_count.gte"] = 20;
+  }
+
   const raw = await tmdbFetch("/discover/movie", params, signal);
   return normalizePage(raw, normalizeMovie);
 }
