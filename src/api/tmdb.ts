@@ -425,7 +425,9 @@ export async function getGenres(signal?: AbortSignal): Promise<Genre[]> {
 /**
  * Browse movies by genre and sort order (no search text).
  * The "rating" sort requires at least 200 votes, so it isn't filled with
- * films that have a single 10/10 vote.
+ * films that have a single 10/10 vote. The "newest" sort only includes movies
+ * released up to today (UTC) with at least 20 votes, so unreleased and
+ * almost-unknown titles don't fill the list.
  * @param filters - Genre (null = all genres) and our own sort name.
  * @param page - Page number, starting at 1.
  * @param signal - Lets a hook cancel the request.

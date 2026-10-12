@@ -74,6 +74,8 @@ export type DiscoverFilters = {
   sort: SortOption;
 };
 
+// What the user picked in the catalog; stored in the URL as ?q=&genre=&sort=.
+// query '' = not searching.
 export type CatalogFilters = DiscoverFilters & {
   query: string;
 };
