@@ -11,3 +11,9 @@ export const BASE_CURRENCY = 'SEK';
 
 // How prices are written (number format and symbol): 'sv-SE' gives "49 kr".
 export const PRICE_LOCALE = 'sv-SE';
+
+// Which country's age rating to show (ISO 3166-1 code).
+export const RATING_REGION = 'SE';
+
+// Used when the main country has no rating for a movie.
+export const FALLBACK_RATING_REGION = 'US';
