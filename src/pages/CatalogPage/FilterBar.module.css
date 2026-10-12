@@ -40,3 +40,9 @@
 .clear:hover {
   background: var(--color-surface-2);
 }
+
+@media (min-width: 768px) {
+  .bar {
+    flex-wrap: nowrap;
+  }
+}
