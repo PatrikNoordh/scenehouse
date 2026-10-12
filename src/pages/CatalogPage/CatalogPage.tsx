@@ -1,69 +1,81 @@
 /**
- * The catalog page ("/"): popular movies in a responsive grid with "Load more".
+ * The catalog page ("/"): search, genre filter and sorting above the results.
+ * The filters live in the URL (?q=&genre=&sort=), so links, reloads and the
+ * Back button all restore the same results.
  */
 
-import { paths } from "../../routes";
+import { useSearchParams } from "react-router";
 
-import { useMovies } from "../../hooks/useMovies";
+import type { CatalogFilters } from "../../types/tmdb";
+import { useGenres } from "../../hooks/useGenres";
+import {
+  DEFAULT_FILTERS,
+  filtersKey,
+  hasActiveFilters,
+  parseCatalogFilters,
+  toSearchParams,
+} from "../../utils/catalogFilters";
 
-import Loader from "../../components/Loader/Loader";
-import ErrorMessage from "../../components/ErrorMessage/ErrorMessage";
-import EmptyState from "../../components/EmptyState/EmptyState";
-import MovieCard from "../../components/MovieCard/MovieCard";
+import SearchBar from "./SearchBar";
+import FilterBar from "./FilterBar";
+import CatalogResults from "./CatalogResults";
 
 import styles from "./CatalogPage.module.css";
 
 /**
- * Gets the data from useMovies and picks which state to show — it never fetches.
+ * Reads the filters from the URL, writes them back on every change, and
+ * composes the search bar, filter bar and results. It keeps no filter state.
  *
- * - No movies yet: exactly one of Loader (loading), ErrorMessage (failed) or
- *   EmptyState (loaded, but zero results).
- * - Some movies: the grid is always shown. A failed "Load more" shows its error
- *   below the grid, so earlier pages never disappear; otherwise the
- *   "Load more" button shows while there are more pages.
- * - The page builds each card's link with paths.movie(id) — cards don't build URLs.
+ * - Each change goes through updateFilters → a new URL → a new history entry,
+ *   which is what makes Back restore the previous search.
+ * - CatalogResults gets key={filtersKey(filters)}, so any filter change mounts
+ *   fresh results (page 1, old request aborted). The search bar and filters
+ *   sit outside that key, so they keep focus while the user types.
+ * - Genres are loaded here, outside the keyed results, so they load once.
  */
 export default function CatalogPage() {
-  const { movies, isLoading, error, hasMore, loadMore, reload } = useMovies();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const hasMovies = movies.length > 0;
+  const filters = parseCatalogFilters(searchParams);
+
+  const {
+    genres,
+    isLoading: genresLoading,
+    hasError: genresFailed,
+  } = useGenres();
+
+  function updateFilters(changes: Partial<CatalogFilters>) {
+    setSearchParams(toSearchParams({ ...filters, ...changes }));
+  }
+
+  const heading = filters.query
+    ? `Results for "${filters.query}"`
+    : hasActiveFilters(filters)
+      ? "Movies"
+      : "Popular movies";
 
   return (
     <section className={styles.page}>
-      <h1 className={styles.heading}>Popular movies</h1>
+      <h1 className={styles.heading}>{heading}</h1>
 
-      {!hasMovies && isLoading && <Loader label="Loading movies…" />}
-      {!hasMovies && error && <ErrorMessage message={error} onRetry={reload} />}
-      {!hasMovies && !isLoading && !error && (
-        <EmptyState message="No movies to show right now." />
-      )}
+      <div className={styles.controls}>
+        <SearchBar
+          query={filters.query}
+          onSearch={(query) => updateFilters({ query })}
+        />
+        <FilterBar
+          genreId={filters.genreId}
+          sort={filters.sort}
+          genres={genres}
+          genresDisabled={genresLoading || genresFailed}
+          showClear={hasActiveFilters(filters)}
+          onGenreChange={(genreId) => updateFilters({ genreId })}
+          onSortChange={(sort) => updateFilters({ sort })}
+          onClear={() => setSearchParams(toSearchParams(DEFAULT_FILTERS))}
+        />
+      </div>
 
-      {hasMovies && (
-        <>
-          <ul className={styles.grid}>
-            {movies.map((movie) => (
-              <li key={movie.id}>
-                <MovieCard movie={movie} to={paths.movie(movie.id)} />
-              </li>
-            ))}
-          </ul>
-
-          {error && <ErrorMessage message={error} onRetry={reload} />}
-
-          {hasMore && !error && (
-            <div className={styles.more}>
-              <button
-                type="button"
-                className={styles.loadMore}
-                onClick={loadMore}
-                disabled={isLoading}
-              >
-                {isLoading ? "Loading…" : "Load more"}
-              </button>
-            </div>
-          )}
-        </>
-      )}
+      <CatalogResults key={filtersKey(filters)} filters={filters} />
     </section>
   );
 }
