@@ -114,6 +114,22 @@ type QueryParams = Record<string, string | number>;
 const cache = new Map<string, unknown>();
 
 /**
+ * The cache key for a request: path + query, without the API key.
+ * Shared by tmdbFetch (to store) and peekMovieDetails (to look up), so the two
+ * can never disagree about what a key looks like.
+ * @param path - The endpoint, e.g. '/movie/550'.
+ * @param params - Extra query parameters; language is always added first.
+ * @returns e.g. "/movie/550?language=en-US&append_to_response=…"
+ */
+function buildCacheKey(path: string, params: QueryParams): string {
+  const query = new URLSearchParams({ language: TMDB_LANGUAGE });
+  for (const [name, value] of Object.entries(params)) {
+    query.set(name, String(value));
+  }
+  return `${path}?${query.toString()}`;
+}
+
+/**
  * The ONE function that calls TMDb — every public function goes through it.
  *
  * - The cache key is built BEFORE the API key is added, so the key is never stored.
@@ -136,18 +152,13 @@ async function tmdbFetch(
   const apiKey = import.meta.env.VITE_TMDB_KEY;
   if (!apiKey) throw new TmdbError(MISSING_KEY_MESSAGE, null);
 
-  const query = new URLSearchParams({ language: TMDB_LANGUAGE });
-  for (const [name, value] of Object.entries(params)) {
-    query.set(name, String(value));
-  }
+  const cacheKey = buildCacheKey(path, params);
 
-  const cacheKey = `${path}?${query.toString()}`;
   if (cache.has(cacheKey)) {
     return cache.get(cacheKey);
   }
 
-  query.set("api_key", apiKey);
-  const url = `${API_BASE_URL}${path}?${query.toString()}`;
+  const url = `${API_BASE_URL}${cacheKey}&api_key=${encodeURIComponent(apiKey)}`;
 
   try {
     const response = await fetch(url, { signal });
@@ -455,6 +466,12 @@ export async function discoverMovies(
   return normalizePage(raw, normalizeMovie);
 }
 
+// The detail request's extra parameter, written once: getMovieDetails sends it
+// and peekMovieDetails looks up with it, so their cache keys always match.
+const DETAIL_PARAMS: QueryParams = {
+  append_to_response: "credits,videos,release_dates,recommendations",
+};
+
 /**
  * Everything the detail page needs — details, credits, videos, age ratings
  * and recommendations — in ONE request.
@@ -466,12 +483,30 @@ export async function getMovieDetails(
   id: number,
   signal?: AbortSignal,
 ): Promise<MovieDetails> {
-  const raw = await tmdbFetch(
-    `/movie/${id}`,
-    { append_to_response: "credits,videos,release_dates,recommendations" },
-    signal,
-  );
+  const raw = await tmdbFetch(`/movie/${id}`, DETAIL_PARAMS, signal);
+
   return normalizeMovieDetails(raw);
+}
+
+/**
+ * A movie's details straight from the cache, without waiting — or null if it
+ * hasn't been fetched yet. Synchronous, so a hook can use it as its initial
+ * state: a movie seen before then shows on the first render, with no spinner
+ * and no request. Never throws: if the cached answer can't be normalized it
+ * returns null, and a normal fetch reports the problem instead.
+ * @param id - The TMDb movie id.
+ * @returns The cached MovieDetails, or null.
+ */
+export function peekMovieDetails(id: number): MovieDetails | null {
+  const raw = cache.get(buildCacheKey(`/movie/${id}`, DETAIL_PARAMS))
+
+  if (raw === undefined) return null;
+
+  try {
+    return normalizeMovieDetails(raw);
+  } catch {
+    return null;
+  }
 }
 
 /**
