@@ -1,0 +1,44 @@
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* As many columns of at least 160px as fit — 1–2 on a phone, 5–6 on desktop,
+   with no breakpoints needed. */
+.grid {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-md);
+}
+
+.more {
+  display: flex;
+  justify-content: center;
+}
+
+.loadMore {
+  padding: var(--space-sm) var(--space-lg);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-weight: 600;
+}
+
+.loadMore:hover:not(:disabled) {
+  background: var(--color-accent-hi);
+}
+
+.loadMore:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    gap: var(--space-lg);
+  }
+}
