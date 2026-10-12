@@ -6,8 +6,8 @@
  */
 
 import { useEffect, useState } from "react";
-import type { Movie } from "../types/tmdb";
-import { getPopularMovies } from "../api/tmdb";
+import type { CatalogFilters, Movie, PagedResponse } from "../types/tmdb";
+import { discoverMovies, getPopularMovies, searchMovies } from "../api/tmdb";
 
 // TMDb refuses pages above 500, even when totalPages reports more.
 const MAX_PAGES = 500;
@@ -40,6 +40,47 @@ function appendUnique(current: Movie[], next: Movie[]): Movie[] {
   return [...current, ...next.filter((movie) => !seen.has(movie.id))];
 }
 
+function fetchMoviePage(
+  filters: CatalogFilters,
+  page: number,
+  signal: AbortSignal,
+): Promise<PagedResponse<Movie>> {
+  if (filters.query) return searchMovies(filters.query, page, signal);
+
+  if (filters.genreId === null && filters.sort === "popular") {
+    return getPopularMovies(page, signal);
+  }
+
+  return discoverMovies(filters, page, signal);
+}
+
+function applySearchFilters(movies: Movie[], filters: CatalogFilters): Movie[] {
+  if (!filters.query) return movies;
+
+  const genreId = filters.genreId;
+
+  const inGenre =
+    genreId === null
+      ? movies
+      : movies.filter((movie) => movie.genreIds.includes(genreId));
+
+  switch (filters.sort) {
+    case "rating":
+      return [...inGenre].sort((a, b) => b.voteAverage - a.voteAverage);
+
+    case "newest":
+      return [...inGenre].sort((a, b) =>
+        b.releaseDate.localeCompare(a.releaseDate),
+      );
+
+    case "title":
+      return [...inGenre].sort((a, b) => a.title.localeCompare(b.title));
+
+    case "popular":
+      return inGenre;
+  }
+}
+
 /**
  * Popular movies for the catalog, with "Load more" and "Try again".
  *
@@ -56,23 +97,20 @@ function appendUnique(current: Movie[], next: Movie[]): Movie[] {
  *
  * @returns The movies so far, loading/error state, and the loadMore/reload actions.
  */
-export function useMovies(): UseMoviesResult {
+export function useMovies(filters: CatalogFilters): UseMoviesResult {
+  const { query, genreId, sort } = filters;
+
   const [movies, setMovies] = useState<Movie[]>([]);
-
   const [page, setPage] = useState(1);
-
   const [totalPages, setTotalPages] = useState(0);
-
   const [isLoading, setIsLoading] = useState(true);
-
   const [error, setError] = useState<string | null>(null);
-
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
 
-    getPopularMovies(page, controller.signal)
+    fetchMoviePage({ query, genreId, sort }, page, controller.signal)
       .then((result) => {
         if (controller.signal.aborted) return;
 
@@ -95,7 +133,7 @@ export function useMovies(): UseMoviesResult {
       });
 
     return () => controller.abort();
-  }, [page, attempt]);
+  }, [query, genreId, sort, page, attempt]);
 
   const hasMore = page < totalPages;
 
@@ -113,5 +151,12 @@ export function useMovies(): UseMoviesResult {
     setAttempt((current) => current + 1);
   }
 
-  return { movies, isLoading, error, hasMore, loadMore, reload };
+  return {
+    movies: applySearchFilters(movies, filters),
+    isLoading,
+    error,
+    hasMore,
+    loadMore,
+    reload,
+  };
 }
