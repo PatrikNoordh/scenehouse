@@ -1,0 +1,42 @@
+.cast {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.heading {
+  font-size: 1.25rem;
+}
+
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  gap: var(--space-md);
+  list-style: none;
+  padding: 0;
+}
+
+.person {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.photo {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
+}
+
+.name {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.character {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+}
