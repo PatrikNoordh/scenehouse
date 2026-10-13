@@ -39,6 +39,7 @@
 
 .nav {
   display: flex;
+  align-items: center;
   gap: var(--space-xs);
 }
 
@@ -58,6 +59,39 @@
 .active {
   color: var(--color-link);
   font-weight: 700;
+}
+
+/* ================ Cart button + badge ================ */
+
+.cartButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.cartButton:hover {
+  color: var(--color-text);
+  background: var(--color-surface-2);
+}
+
+.badge {
+  display: grid;
+  place-items: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 var(--space-xs);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-hi);
+  color: var(--color-on-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
 }
 
 /* ================ Main + footer ================ */

@@ -1,0 +1,88 @@
+/* ================ Dialog — pinned to the right edge ================ */
+
+/* No display property here: the browser hides a closed dialog with
+   display: none, and setting display would keep it visible when closed.
+   The flex layout lives on .panel instead. */
+.drawer {
+  margin: 0 0 0 auto;
+  width: min(100%, 24rem);
+  max-width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  padding: 0;
+  border: none;
+  border-left: 1px solid var(--color-surface-2);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.drawer[open] {
+  animation: slide-in 200ms ease-out;
+}
+
+.drawer::backdrop {
+  background: color-mix(in srgb, var(--color-bg) 70%, transparent);
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* ================ Panel — the content inside ================ */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  height: 100%;
+  padding: var(--space-md);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 1.25rem;
+}
+
+.close {
+  padding: var(--space-xs) var(--space-sm);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.close:hover {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+}
+
+/* ================ "Go to cart" — a link styled as the primary button ================ */
+
+.goToCart {
+  display: block;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+}
+
+.goToCart:hover {
+  background: var(--color-accent-hi);
+}
