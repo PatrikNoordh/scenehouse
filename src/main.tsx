@@ -4,6 +4,8 @@ import App from "./App.tsx";
 import "./styles/tokens.css";
 import "./styles/global.css";
 import { BrowserRouter } from "react-router";
+import { Provider } from "react-redux";
+import { store } from "./app/store";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -12,8 +14,10 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <Provider store={store}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </Provider>
   </StrictMode>,
 );
