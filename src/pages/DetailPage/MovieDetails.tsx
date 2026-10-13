@@ -15,6 +15,16 @@ import CastList from "./CastList";
 import PurchaseOptions from "./PurchaseOptions";
 import styles from "./MovieDetails.module.css";
 
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import {
+  addItem,
+  cartItemKey,
+  removeItem,
+  selectCartItemForMovie,
+} from "../../features/cart/cartSlice";
+import type { CartItemType } from "../../features/cart/cartSlice";
+import { getBuyPrice, getRentPrice } from "../../utils/pricing";
+
 type Props = {
   id: number;
 };
@@ -39,10 +49,19 @@ function formatRuntime(minutes: number): string {
  * - Age rating: RATING_REGION, else FALLBACK_RATING_REGION, else no badge.
  * - Both images have an empty alt: the backdrop is decoration, and the poster
  *   repeats the title shown in the heading next to it.
+ * - Cart: reads this movie's cart item with selectCartItemForMovie and passes
+ *   only its type to PurchaseOptions. The click handlers build the CartItem —
+ *   key, movie info and the price at that moment — and dispatch addItem or
+ *   removeItem; the slice enforces "one item per movie".
+ * - The two Redux hooks are called before the early returns 
  * @param props.id - A valid TMDb movie id.
  */
 export default function MovieDetails({ id }: Props) {
   const { movie, isLoading, error, notFound, reload } = useMovieDetails(id);
+
+  const cartItem = useAppSelector(selectCartItemForMovie(id));
+
+  const dispatch = useAppDispatch();
 
   if (isLoading) return <Loader label="Loading movie…" />;
 
@@ -51,6 +70,23 @@ export default function MovieDetails({ id }: Props) {
   if (error) return <ErrorMessage message={error} onRetry={reload} />;
 
   if (movie === null) return null;
+
+  const handleAdd = (type: CartItemType) => {
+    dispatch(
+      addItem({
+        key: cartItemKey(movie.id, type),
+        movieId: movie.id,
+        title: movie.title,
+        posterPath: movie.posterPath,
+        type,
+        price: type === "rent" ? getRentPrice(movie) : getBuyPrice(movie),
+      }),
+    );
+  };
+
+  const handleRemove = () => {
+    if (cartItem) dispatch(removeItem(cartItem.key));
+  };
 
   const year = movie.releaseDate.slice(0, 4);
 
@@ -119,7 +155,12 @@ export default function MovieDetails({ id }: Props) {
       </div>
 
       <div className={styles.body}>
-        <PurchaseOptions movie={movie} />
+        <PurchaseOptions
+          movie={movie}
+          inCart={cartItem?.type ?? null}
+          onAdd={handleAdd}
+          onRemove={handleRemove}
+        />
 
         <section className={styles.overview}>
           <h2 className={styles.heading}>Overview</h2>
