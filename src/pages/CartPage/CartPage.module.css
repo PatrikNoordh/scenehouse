@@ -1,0 +1,26 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  width: 100%;
+  max-width: 40rem;
+  margin-inline: auto;
+}
+
+.heading {
+  font-size: 1.75rem;
+}
+
+.clear {
+  align-self: flex-start;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-surface-2);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.clear:hover {
+  background: var(--color-surface-2);
+}
