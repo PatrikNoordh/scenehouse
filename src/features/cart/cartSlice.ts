@@ -24,7 +24,7 @@ export type CartItem = {
   price: number;
 };
 
-type CartState = {
+export type CartState = {
   items: CartItem[];
 };
 
