@@ -1,5 +1,4 @@
 .search {
-  flex: 1 1 16rem;
   min-width: 0;
 }
 
@@ -23,4 +22,10 @@
 
 .input::placeholder {
   color: var(--color-text-muted);
+}
+
+@media (min-width: 768px) {
+  .search {
+    flex: 1 1 16rem;
+  }
 }
