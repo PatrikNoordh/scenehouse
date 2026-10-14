@@ -30,7 +30,7 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
  * is open. The drawer itself only receives props and reports back.
  * - Reading the cart through selectors re-renders the header whenever the cart
  *   changes, so the badge updates the moment an item is added or removed.
- * - The badge only renders when count > 0. 
+ * - The badge only renders when count > 0.
  * - The cart button's aria-label ("Cart, 2 items") gives screen readers the
  *   count the badge only shows visually.
  * - Whether the drawer is open is UI state, so it lives in useState, not Redux.
@@ -76,6 +76,20 @@ export default function Layout() {
       </main>
 
       <footer className={styles.footer}>
+        <a
+          href="https://www.themoviedb.org"
+          target="_blank"
+          rel="noreferrer"
+          className={styles.tmdbLink}
+        >
+          <img
+            src="/tmdb-logo.svg"
+            alt="The Movie Database (TMDB)"
+            width={273}
+            height={36}
+            className={styles.tmdbLogo}
+          />
+        </a>
         <p>
           This product uses the TMDB API but is not endorsed or certified by
           TMDB.
