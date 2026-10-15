@@ -6,6 +6,8 @@
 import { paths } from "../../routes";
 import { useMovies } from "../../hooks/useMovies";
 import type { CatalogFilters } from "../../types/tmdb";
+import { useAppSelector } from "../../app/hooks";
+import { selectCartItems } from "../../features/cart/cartSlice";
 
 import Loader from "../../components/Loader/Loader";
 import ErrorMessage from "../../components/ErrorMessage/ErrorMessage";
@@ -34,6 +36,10 @@ export default function CatalogResults({ filters }: Props) {
   const { movies, isLoading, error, hasMore, loadMore, reload } =
     useMovies(filters);
 
+  const cartItems = useAppSelector(selectCartItems);
+
+  const cartMovieIds = new Set(cartItems.map((item) => item.movieId));
+
   const hasMovies = movies.length > 0;
 
   const emptyMessage = filters.query
@@ -53,7 +59,11 @@ export default function CatalogResults({ filters }: Props) {
           <ul className={styles.grid}>
             {movies.map((movie) => (
               <li key={movie.id}>
-                <MovieCard movie={movie} to={paths.movie(movie.id)} />
+                <MovieCard
+                  movie={movie}
+                  to={paths.movie(movie.id)}
+                  inCart={cartMovieIds.has(movie.id)}
+                />
               </li>
             ))}
           </ul>
