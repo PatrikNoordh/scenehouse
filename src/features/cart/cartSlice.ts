@@ -8,6 +8,8 @@
 
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
+import type { Movie } from "../../types/tmdb";
+import { getBuyPrice, getRentPrice, sumPrices } from "../../utils/pricing";
 
 // Type-only import: erased at build time, so store.ts importing this file's
 // reducer doesn't create a runtime import cycle.
@@ -40,6 +42,25 @@ const initialState: CartState = {
  */
 export function cartItemKey(movieId: number, type: CartItemType): string {
   return `${movieId}-${type}`;
+}
+
+/**
+ * Builds the cart item for a movie — the one place this is done, so every
+ * "Rent" and "Buy" button stores the same fields and the same price.
+ * The price is fixed at the moment of adding: the cart shows what the user agreed to.
+ * @param movie - The movie (a MovieDetails works too — it is a Movie plus more).
+ * @param type - Rent or buy.
+ * @returns e.g. { key: "550-rent", movieId: 550, …, price: 39 }
+ */
+export function createCartItem(movie: Movie, type: CartItemType): CartItem {
+  return {
+    key: cartItemKey(movie.id, type),
+    movieId: movie.id,
+    title: movie.title,
+    posterPath: movie.posterPath,
+    type,
+    price: type === "rent" ? getRentPrice(movie) : getBuyPrice(movie),
+  };
 }
 
 /**
@@ -83,7 +104,7 @@ export const selectCartItems = (state: RootState) => state.cart.items;
 export const selectCartCount = (state: RootState) => state.cart.items.length;
 
 export const selectCartTotalPrice = (state: RootState) =>
-  state.cart.items.reduce((sum, item) => sum + item.price, 0);
+  sumPrices(state.cart.items);
 
 /**
  * A selector factory: returns a selector for one movie. Needed because

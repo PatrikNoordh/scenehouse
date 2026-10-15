@@ -128,3 +128,12 @@ const priceFormatter = new Intl.NumberFormat(PRICE_LOCALE, {
 export function formatPrice(amount: number): string {
   return priceFormatter.format(amount);
 }
+
+/**
+ * Adds up the prices of a list — the whole cart or a part of it.
+ * Accepts anything with a price, so this file needs no cart import.
+ * @param items - Items with a price in whole SEK.
+ */
+export function sumPrices(items: { price: number }[]): number {
+  return items.reduce((sum, item) => sum + item.price, 0);
+}

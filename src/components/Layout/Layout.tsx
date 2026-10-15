@@ -1,10 +1,18 @@
 /**
- * The app shell around every page: header with logo, navigation and cart
- * button, the current page, the footer, and the cart drawer.
+ * The app shell around every page: header with logo, search, navigation and
+ * cart button, the current page, the footer, and the cart drawer.
  */
 
 import { useState } from "react";
-import { Link, NavLink, Outlet } from "react-router";
+import { ShoppingCart } from "lucide-react";
+import {
+  Link,
+  NavLink,
+  Outlet,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router";
 
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import {
@@ -14,7 +22,13 @@ import {
   selectCartTotalPrice,
 } from "../../features/cart/cartSlice";
 import { paths } from "../../routes";
+import {
+  DEFAULT_FILTERS,
+  parseCatalogFilters,
+  toSearchParams,
+} from "../../utils/catalogFilters";
 import CartDrawer from "../CartDrawer/CartDrawer";
+import SearchBar from "../SearchBar/SearchBar";
 import styles from "./Layout.module.css";
 
 /**
@@ -34,6 +48,10 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
  * - The cart button's aria-label ("Cart, 2 items") gives screen readers the
  *   count the badge only shows visually.
  * - Whether the drawer is open is UI state, so it lives in useState, not Redux.
+ * - Search: the URL is the only place the search lives. On the catalog the box
+ *   shows the URL's ?q=; on other pages it starts empty (DEFAULT_FILTERS).
+ *   handleSearch always goes to the catalog and keeps the current genre and
+ *   sort when already there.
  */
 export default function Layout() {
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -42,6 +60,23 @@ export default function Layout() {
   const count = useAppSelector(selectCartCount);
   const total = useAppSelector(selectCartTotalPrice);
   const dispatch = useAppDispatch();
+
+  const [searchParams] = useSearchParams();
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const isCatalog = location.pathname === paths.catalog;
+  const filters = isCatalog
+    ? parseCatalogFilters(searchParams)
+    : DEFAULT_FILTERS;
+
+  function handleSearch(query: string) {
+    navigate({
+      pathname: paths.catalog,
+      search: toSearchParams({ ...filters, query }).toString(),
+    });
+  }
 
   const cartLabel = count === 1 ? "Cart, 1 item" : `Cart, ${count} items`;
 
@@ -54,6 +89,10 @@ export default function Layout() {
           <span className={styles.logoAccent}>House</span>
         </Link>
 
+        <div className={styles.search}>
+          <SearchBar query={filters.query} onSearch={handleSearch} />
+        </div>
+
         <nav className={styles.nav} aria-label="Main">
           <NavLink to={paths.catalog} end className={navClass}>
             Catalog
@@ -65,8 +104,11 @@ export default function Layout() {
             aria-label={cartLabel}
             aria-haspopup="dialog"
           >
-            <span>Cart</span>
-            {count > 0 && <span className={styles.badge}>{count}</span>}
+            <span className={styles.cartIcon}>
+              <ShoppingCart size={22} aria-hidden="true" />
+              {count > 0 && <span className={styles.badge}>{count}</span>}
+            </span>
+            <span className={styles.cartText}>Cart</span>
           </button>
         </nav>
       </header>
@@ -76,6 +118,11 @@ export default function Layout() {
       </main>
 
       <footer className={styles.footer}>
+        <p className={styles.footerLogo}>
+          <span aria-hidden="true">🎬</span>
+          <span>Scene</span>
+          <span className={styles.logoAccent}>House</span>
+        </p>
         <a
           href="https://www.themoviedb.org"
           target="_blank"
@@ -93,6 +140,9 @@ export default function Layout() {
         <p>
           This product uses the TMDB API but is not endorsed or certified by
           TMDB.
+        </p>
+        <p className={styles.credits}>
+          Movie data from TMDB · School project, 2026
         </p>
       </footer>
 

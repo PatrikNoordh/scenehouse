@@ -6,6 +6,8 @@
 import { paths } from "../../routes";
 import { useMovies } from "../../hooks/useMovies";
 import type { CatalogFilters } from "../../types/tmdb";
+import { useAppSelector } from "../../app/hooks";
+import { selectCartItems } from "../../features/cart/cartSlice";
 
 import Loader from "../../components/Loader/Loader";
 import ErrorMessage from "../../components/ErrorMessage/ErrorMessage";
@@ -27,12 +29,19 @@ type Props = {
  *   empty text names the search: `No movies match "xyz".`
  * - Some movies: the grid always stays; a failed "Load more" shows its error
  *   below it, otherwise "Load more" shows while there are more pages.
+ * - Reads the cart and passes each card whether its movie is in it. The ids
+ *   go into a Set, so each card is one fast .has() lookup instead of a search
+ *   through the whole cart.
  *
  * @param props.filters - Search text, genre and sort to show results for.
  */
 export default function CatalogResults({ filters }: Props) {
   const { movies, isLoading, error, hasMore, loadMore, reload } =
     useMovies(filters);
+
+  const cartItems = useAppSelector(selectCartItems);
+
+  const cartMovieIds = new Set(cartItems.map((item) => item.movieId));
 
   const hasMovies = movies.length > 0;
 
@@ -53,7 +62,11 @@ export default function CatalogResults({ filters }: Props) {
           <ul className={styles.grid}>
             {movies.map((movie) => (
               <li key={movie.id}>
-                <MovieCard movie={movie} to={paths.movie(movie.id)} />
+                <MovieCard
+                  movie={movie}
+                  to={paths.movie(movie.id)}
+                  inCart={cartMovieIds.has(movie.id)}
+                />
               </li>
             ))}
           </ul>

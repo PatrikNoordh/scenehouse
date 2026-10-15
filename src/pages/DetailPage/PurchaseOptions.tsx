@@ -14,16 +14,30 @@ type Props = {
   onRemove: () => void;
 };
 
-const OPTIONS: { type: CartItemType; label: string; action: string }[] = [
-  { type: "rent", label: "Rent 48 h", action: "Rent" },
-  { type: "buy", label: "Buy", action: "Buy" },
+const OPTIONS: {
+  type: CartItemType;
+  label: string;
+  hint: string;
+  action: string;
+}[] = [
+  {
+    type: "rent",
+    label: "Rent 48 h",
+    hint: "Starts when you press play",
+    action: "Rent",
+  },
+  {
+    type: "buy",
+    label: "Buy",
+    hint: "Yours forever in your library",
+    action: "Buy",
+  },
 ];
 
 /**
- * Shows both options with their prices ( via formatPrice).
- *  The option in the cart gets a frame, "In cart ✓" and a Remove
- * button; the other keeps its normal button, which replaces the choice.
- * Never touches Redux: it receives what's in the cart and reports clicks.
+ * "Choose how to watch": one row per option with a hint and its price.
+ * The option in the cart shows "✓ In cart" and Remove; the other one's button
+ * replaces it. Never touches Redux: it receives what's in the cart and reports clicks.
  * @param props.movie - The movie to price.
  * @param props.inCart - The option in the cart for this movie, or null.
  * @param props.onAdd - Called with "rent" or "buy" when that button is clicked.
@@ -41,37 +55,44 @@ export default function PurchaseOptions({
   };
 
   return (
-    <section className={styles.options}>
-      <h2 className={styles.heading}>Rent or buy</h2>
-      <div className={styles.choices}>
+    <section className={styles.options} aria-labelledby="purchase-title">
+      <h2 id="purchase-title" className={styles.heading}>
+        Choose how to watch
+      </h2>
+
+      <ul className={styles.choices}>
         {OPTIONS.map((option) => {
           const isInCart = inCart === option.type;
 
           return (
-            <div
+            <li
               key={option.type}
               className={
                 isInCart ? `${styles.choice} ${styles.selected}` : styles.choice
               }
             >
-              <span className={styles.label}>{option.label}</span>
+              <div className={styles.text}>
+                <span className={styles.label}>{option.label}</span>
+                <span className={styles.hint}>{option.hint}</span>
+              </div>
+
               <span className={styles.price}>
                 {formatPrice(prices[option.type])}
               </span>
 
               {isInCart ? (
-                <>
+                <div className={styles.cartActions}>
                   <span className={styles.inCart}>
-                    In cart <span aria-hidden="true">✓</span>
+                    <span aria-hidden="true">✓</span> In cart
                   </span>
                   <button
                     type="button"
-                    className={styles.secondary}
+                    className={styles.remove}
                     onClick={onRemove}
                   >
                     Remove
                   </button>
-                </>
+                </div>
               ) : (
                 <button
                   type="button"
@@ -83,10 +104,10 @@ export default function PurchaseOptions({
                   {option.action}
                 </button>
               )}
-            </div>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </section>
   );
 }

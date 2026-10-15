@@ -1,6 +1,7 @@
 /**
- * One movie in a grid: poster, title, year, rating and a "from" price.
- * Presentational — it never fetches and never builds its own link URL.
+ * One movie in a grid: poster, title, year, rating, a "from" price and an
+ * "In cart" badge. Presentational — it never fetches, never reads the cart
+ * and never builds its own link URL.
  */
 
 import { Link } from "react-router";
@@ -12,6 +13,7 @@ import styles from "./MovieCard.module.css";
 type Props = {
   movie: Movie;
   to: string;
+  inCart?: boolean;
 };
 
 /**
@@ -25,30 +27,48 @@ type Props = {
  *
  * @param props.movie - The movie to show.
  * @param props.to - The link destination.
+ * @param props.inCart - Shows the "In cart" badge. Optional; defaults to false.
  */
-export default function MovieCard({ movie, to }: Props) {
+export default function MovieCard({ movie, to, inCart = false }: Props) {
   const year = movie.releaseDate.slice(0, 4);
   const rating = movie.voteAverage > 0 ? movie.voteAverage.toFixed(1) : null;
 
   return (
     <Link to={to} className={styles.card}>
-      <img
-        className={styles.poster}
-        src={getImageUrl(movie.posterPath, "poster")}
-        alt=""
-        loading="lazy"
-      />
+      <div className={styles.media}>
+        <img
+          className={styles.poster}
+          src={getImageUrl(movie.posterPath, "poster")}
+          alt=""
+          loading="lazy"
+        />
+        {inCart && (
+          <span className={styles.badge}>
+            <span aria-hidden="true">✓</span> In cart
+          </span>
+        )}
+        <span className={styles.hoverLabel} aria-hidden="true">
+          View details
+        </span>
+      </div>
+
       <div className={styles.body}>
         <h2 className={styles.title}>{movie.title}</h2>
-        <p className={styles.meta}>
-          {year && <span>{year}</span>}
+        {year && <p className={styles.year}>{year}</p>}
+        <p className={styles.row}>
           {rating && (
-            <span>
-              <span aria-hidden="true">★</span> {rating}
+            <span className={styles.rating}>
+              <span className={styles.star} aria-hidden="true">
+                ★
+              </span>{" "}
+              {rating}
             </span>
-          )}
+          )}{" "}
+          <span className={styles.price}>
+            <span className={styles.from}>from</span>{" "}
+            {formatPrice(getRentPrice(movie))}
+          </span>
         </p>
-        <p className={styles.price}>from {formatPrice(getRentPrice(movie))}</p>
       </div>
     </Link>
   );

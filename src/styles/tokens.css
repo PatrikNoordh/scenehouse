@@ -1,4 +1,4 @@
-/* Design tokens — the single source of truth for colors, spacing and radii.
+/* Design tokens — the single source of truth for colors, shadows, spacing and radii.
    Dark is the default theme; light overrides only what changes. */
 
 :root {
@@ -17,6 +17,14 @@
   --color-link: #ffc300;
   --color-success: #3ddc97;
   --color-danger: #ff6b6b;
+  --color-border: #003566;
+  --color-overlay: #000814cc;
+
+  /* ================ Shadow ================ */
+
+  --shadow-card: 0 4px 12px #0008144d;
+  --shadow-panel: 0 16px 48px #00081499;
+  --shadow-glow: 0 0 24px #ffc30066;
 
   /* ================ Typography ================ */
 
@@ -48,5 +56,12 @@
     --color-text: #000814;
     --color-text-muted: #4a5a70;
     --color-link: #003566;
+    --color-success: #1fa97a;
+    --color-danger: #d64545;
+    --color-border: #e3eaf3;
+    --color-overlay: #000814a6;
+
+    --shadow-card: 0 4px 12px #0008141f;
+    --shadow-panel: 0 16px 48px #00081433;
   }
 }

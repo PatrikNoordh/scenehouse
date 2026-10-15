@@ -7,30 +7,32 @@ import { getImageUrl } from "../../api/tmdb";
 import { useMovieDetails } from "../../hooks/useMovieDetails";
 import { getCertification } from "../../utils/certification";
 import { FALLBACK_RATING_REGION, RATING_REGION } from "../../config";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import {
+  addItem,
+  createCartItem,
+  removeItem,
+  selectCartItemForMovie,
+} from "../../features/cart/cartSlice";
+import type { CartItemType } from "../../features/cart/cartSlice";
 
 import Loader from "../../components/Loader/Loader";
 import ErrorMessage from "../../components/ErrorMessage/ErrorMessage";
 import EmptyState from "../../components/EmptyState/EmptyState";
 import CastList from "./CastList";
+import Recommendations from "./Recommendations";
 import PurchaseOptions from "./PurchaseOptions";
-import styles from "./MovieDetails.module.css";
 
-import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import {
-  addItem,
-  cartItemKey,
-  removeItem,
-  selectCartItemForMovie,
-} from "../../features/cart/cartSlice";
-import type { CartItemType } from "../../features/cart/cartSlice";
-import { getBuyPrice, getRentPrice } from "../../utils/pricing";
+import styles from "./MovieDetails.module.css";
 
 type Props = {
   id: number;
 };
 
-// How many cast members to show.
+
 const CAST_LIMIT = 8;
+
+const RECOMMENDATION_LIMIT = 6;
 
 /**
  * Formats a runtime: 139 → "2 h 19 min", 45 → "45 min".
@@ -53,7 +55,7 @@ function formatRuntime(minutes: number): string {
  *   only its type to PurchaseOptions. The click handlers build the CartItem —
  *   key, movie info and the price at that moment — and dispatch addItem or
  *   removeItem; the slice enforces "one item per movie".
- * - The two Redux hooks are called before the early returns 
+ * - The two Redux hooks are called before the early returns
  * @param props.id - A valid TMDb movie id.
  */
 export default function MovieDetails({ id }: Props) {
@@ -72,21 +74,17 @@ export default function MovieDetails({ id }: Props) {
   if (movie === null) return null;
 
   const handleAdd = (type: CartItemType) => {
-    dispatch(
-      addItem({
-        key: cartItemKey(movie.id, type),
-        movieId: movie.id,
-        title: movie.title,
-        posterPath: movie.posterPath,
-        type,
-        price: type === "rent" ? getRentPrice(movie) : getBuyPrice(movie),
-      }),
-    );
+    dispatch(addItem(createCartItem(movie, type)));
   };
 
   const handleRemove = () => {
     if (cartItem) dispatch(removeItem(cartItem.key));
   };
+
+  const topRecommendations = movie.recommendations.slice(
+    0,
+    RECOMMENDATION_LIMIT,
+  );
 
   const year = movie.releaseDate.slice(0, 4);
 
@@ -116,6 +114,7 @@ export default function MovieDetails({ id }: Props) {
             src={getImageUrl(movie.posterPath, "poster")}
             alt=""
           />
+
           <div className={styles.info}>
             <h1 className={styles.title}>{movie.title}</h1>
             {movie.tagline && <p className={styles.tagline}>{movie.tagline}</p>}
@@ -127,7 +126,9 @@ export default function MovieDetails({ id }: Props) {
               )}
               {movie.voteAverage > 0 && (
                 <li>
-                  <span aria-hidden="true">★</span>{" "}
+                  <span className={styles.star} aria-hidden="true">
+                    ★
+                  </span>{" "}
                   {movie.voteAverage.toFixed(1)}
                 </li>
               )}
@@ -150,31 +151,34 @@ export default function MovieDetails({ id }: Props) {
                 ))}
               </ul>
             )}
+
+            <p className={styles.overview}>
+              {movie.overview || "No description available."}
+            </p>
+            {directors.length > 0 && (
+              <p>
+                <span className={styles.label}>Director:</span>{" "}
+                {directors.join(", ")}
+              </p>
+            )}
+          </div>
+
+          <div className={styles.purchase}>
+            <PurchaseOptions
+              movie={movie}
+              inCart={cartItem?.type ?? null}
+              onAdd={handleAdd}
+              onRemove={handleRemove}
+            />
           </div>
         </div>
       </div>
 
-      <div className={styles.body}>
-        <PurchaseOptions
-          movie={movie}
-          inCart={cartItem?.type ?? null}
-          onAdd={handleAdd}
-          onRemove={handleRemove}
-        />
+      {topCast.length > 0 && <CastList cast={topCast} />}
 
-        <section className={styles.overview}>
-          <h2 className={styles.heading}>Overview</h2>
-          <p>{movie.overview || "No description available."}</p>
-          {directors.length > 0 && (
-            <p className={styles.director}>
-              <span className={styles.label}>Director:</span>{" "}
-              {directors.join(", ")}
-            </p>
-          )}
-        </section>
-
-        {topCast.length > 0 && <CastList cast={topCast} />}
-      </div>
+      {topRecommendations.length > 0 && (
+        <Recommendations movies={topRecommendations} />
+      )}
     </article>
   );
 }

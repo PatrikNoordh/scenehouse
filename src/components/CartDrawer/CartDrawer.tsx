@@ -4,10 +4,13 @@
  */
 
 import { useEffect, useRef } from "react";
-import type { MouseEvent } from "react";
+import { X } from "lucide-react";
 import { Link } from "react-router";
 
+import type { MouseEvent } from "react";
 import type { CartItem } from "../../features/cart/cartSlice";
+import { formatPrice } from "../../utils/pricing";
+
 import CartItemList from "../CartItemList/CartItemList";
 import EmptyState from "../EmptyState/EmptyState";
 import styles from "./CartDrawer.module.css";
@@ -30,6 +33,8 @@ type Props = {
  * - Overlay click: a backdrop click is reported on the <dialog> itself, so
  *   event.target === currentTarget means "outside the panel".
  * - Both links call onClose, so the drawer never stays open over a new page.
+ *   "Continue shopping" is a button: it only closes the drawer.
+ * - Only the item list scrolls; the total and the buttons stay at the bottom.
  * @param props.isOpen - Whether the drawer is showing.
  * @param props.onClose - Called on Esc, overlay click, the close button, and either link.
  * @param props.items - The cart items.
@@ -74,7 +79,7 @@ export default function CartDrawer({
       <div className={styles.panel}>
         <div className={styles.header}>
           <h2 id="cart-drawer-title" className={styles.title}>
-            Your cart
+            {items.length > 0 ? `Your cart (${items.length})` : "Your cart"}
           </h2>
           <button
             type="button"
@@ -82,7 +87,7 @@ export default function CartDrawer({
             onClick={onClose}
             aria-label="Close cart"
           >
-            <span aria-hidden="true">✕</span>
+            <X size={18} aria-hidden="true" />
           </button>
         </div>
 
@@ -94,10 +99,26 @@ export default function CartDrawer({
           </EmptyState>
         ) : (
           <>
-            <CartItemList items={items} total={total} onRemove={onRemove} />
-            <Link to={cartPath} className={styles.goToCart} onClick={onClose}>
-              Go to cart
-            </Link>
+            <div className={styles.items}>
+              <CartItemList items={items} onRemove={onRemove} />
+            </div>
+
+            <div className={styles.footer}>
+              <p className={styles.total}>
+                <span>Total</span>
+                <span className={styles.totalPrice}>{formatPrice(total)}</span>
+              </p>
+              <Link to={cartPath} className={styles.goToCart} onClick={onClose}>
+                Go to cart
+              </Link>
+              <button
+                type="button"
+                className={styles.continue}
+                onClick={onClose}
+              >
+                Continue shopping
+              </button>
+            </div>
           </>
         )}
       </div>

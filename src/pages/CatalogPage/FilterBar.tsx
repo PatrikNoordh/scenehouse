@@ -1,100 +1,62 @@
 /**
- * The catalog's genre and sort dropdowns, plus "Clear filters".
- * Holds no state: values come from the URL via props, changes are reported up.
+ * The catalog's genre chips: "All" plus one chip per genre, in one row.
+ * Holds no state: the genre comes from the URL via props, changes are reported up.
  */
 
-import type { Genre, SortOption } from "../../types/tmdb";
+import type { Genre } from "../../types/tmdb";
+import ScrollContainer from "react-indiana-drag-scroll";
 import styles from "./FilterBar.module.css";
-
-const SORT_CHOICES: { value: SortOption; label: string }[] = [
-  { value: "popular", label: "Popularity" },
-  { value: "rating", label: "Rating" },
-  { value: "newest", label: "Release date" },
-];
 
 type Props = {
   genreId: number | null;
-  sort: SortOption;
   genres: Genre[];
-  genresDisabled: boolean;
-  showClear: boolean;
   onGenreChange: (genreId: number | null) => void;
-  onSortChange: (sort: SortOption) => void;
-  onClear: () => void;
 };
 
 /**
- * Controlled selects that report typed values: a genre option's text "28"
- * becomes the number 28 ("" = all genres = null), and a sort value is looked up
- * in SORT_CHOICES.
- * The genre select is disabled while genres load or after they failed —
- * the catalog keeps working without it.
- *
+ * Toggle buttons with aria-pressed, so screen readers announce which genre is
+ * chosen, and the CSS styles the chosen chip from that same attribute.
+ * - "All" reports null and is how a genre is cleared.
+ * - While genres load, or after they failed, `genres` is empty and only "All"
+ *   shows — the catalog keeps working without them.
+ * - The row scrolls sideways inside ScrollContainer (react-indiana-drag-scroll),
+ *   so the mouse can drag it.
+ * - hideScrollbars={false}: the library's own hiding sets overflow: hidden,
+ *   which would block trackpad and touch scrolling; the CSS hides the bar instead.
+ * - role and aria-label sit on the inner div, because ScrollContainer's props
+ *   don't accept them.
  * @param props.genreId - The selected genre, or null for all genres.
- * @param props.sort - The selected sort.
  * @param props.genres - The genres to offer.
- * @param props.genresDisabled - Disables the genre select.
- * @param props.showClear - Shows "Clear filters" when something is set.
  * @param props.onGenreChange - Called with the new genre id, or null.
- * @param props.onSortChange - Called with the new sort.
- * @param props.onClear - Called when "Clear filters" is clicked.
  */
-export default function FilterBar({
-  genreId,
-  sort,
-  genres,
-  genresDisabled,
-  showClear,
-  onGenreChange,
-  onSortChange,
-  onClear,
-}: Props) {
+export default function FilterBar({ genreId, genres, onGenreChange }: Props) {
   return (
-    <div className={styles.bar}>
-      <label className={styles.field}>
-        <span className={styles.labelText}>Genre</span>
-        <select
-          className={styles.select}
-          value={genreId ?? ""}
-          disabled={genresDisabled}
-          onChange={(event) => {
-            const value = event.target.value;
-            onGenreChange(value === "" ? null : Number(value));
-          }}
+    <ScrollContainer
+      className={styles.scroller}
+      vertical={false}
+      hideScrollbars={false}
+    >
+      <div className={styles.chips} role="group" aria-label="Genre">
+        <button
+          type="button"
+          className={styles.chip}
+          aria-pressed={genreId === null}
+          onClick={() => onGenreChange(null)}
         >
-          <option value="">All genres</option>
-          {genres.map((genre) => (
-            <option key={genre.id} value={genre.id}>
-              {genre.name}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label className={styles.field}>
-        <span className={styles.labelText}>Sort by</span>
-        <select
-          className={styles.select}
-          value={sort}
-          onChange={(event) => {
-            const choice = SORT_CHOICES.find(
-              (option) => option.value === event.target.value,
-            );
-            if (choice) onSortChange(choice.value);
-          }}
-        >
-          {SORT_CHOICES.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      {showClear && (
-        <button type="button" className={styles.clear} onClick={onClear}>
-          Clear filters
+          All
         </button>
-      )}
-    </div>
+        {genres.map((genre) => (
+          <button
+            key={genre.id}
+            type="button"
+            className={styles.chip}
+            aria-pressed={genreId === genre.id}
+            onClick={() => onGenreChange(genre.id)}
+          >
+            {genre.name}
+          </button>
+        ))}
+      </div>
+    </ScrollContainer>
   );
 }

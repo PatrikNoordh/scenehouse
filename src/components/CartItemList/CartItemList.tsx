@@ -1,7 +1,9 @@
 /**
- * The cart's rows and total. Shared by the cart drawer and the cart page, so
- * both always show the cart the same way.
+ * The cart's rows. Shared by the cart drawer and the cart page, so both always
+ * show the items the same way; each parent shows the total in its own place.
  */
+
+import { Trash2 } from "lucide-react";
 
 import { getImageUrl } from "../../api/tmdb";
 import type { CartItem, CartItemType } from "../../features/cart/cartSlice";
@@ -11,7 +13,6 @@ import styles from "./CartItemList.module.css";
 
 type Props = {
   items: CartItem[];
-  total: number;
   onRemove: (key: string) => void;
 };
 
@@ -23,54 +24,50 @@ const TYPE_LABELS: Record<CartItemType, string> = {
 };
 
 /**
- * Lists every cart item (poster, title, Rent 48 h / Buy, price, Remove) with
- * the total below. Never touches Redux: it receives the items and the total,
- * and reports Remove clicks.
- * - The poster has alt="" because the title next to it already names it;
- *   a screen reader would otherwise read the title twice.
- * - Each Remove button's accessible name includes the title,
- *  so the buttons can be told apart without seeing the row.
+ * Lists every cart item (poster, title, type pill, price, trash button).
+ * Never touches Redux: it receives the items and reports Remove clicks.
+ * - The poster has alt="" because the title next to it already names it.
+ * - The trash button shows only an icon, so its aria-label ("Remove <title>")
+ *   is its name.
  * - Assumes items is not empty; the parent shows the empty state instead.
  * @param props.items - The cart items, in the order they were added.
- * @param props.total - The sum of all prices in whole SEK, from the cart's total selector.
  * @param props.onRemove - Called with an item's key when its Remove button is clicked.
  */
-export default function CartItemList({ items, total, onRemove }: Props) {
+export default function CartItemList({ items, onRemove }: Props) {
   return (
-    <div className={styles.cart}>
-      <ul className={styles.list}>
-        {items.map((item) => (
-          <li key={item.key} className={styles.item}>
-            <img
-              className={styles.poster}
-              src={getImageUrl(item.posterPath, "poster")}
-              alt=""
-              loading="lazy"
-            />
+    <ul className={styles.list}>
+      {items.map((item) => (
+        <li key={item.key} className={styles.item}>
+          <img
+            className={styles.poster}
+            src={getImageUrl(item.posterPath, "poster")}
+            alt=""
+            loading="lazy"
+          />
 
-            <div className={styles.info}>
-              <span className={styles.title}>{item.title}</span>
-              <span className={styles.type}>{TYPE_LABELS[item.type]}</span>
-            </div>
-
-            <span className={styles.price}>{formatPrice(item.price)}</span>
-
-            <button
-              type="button"
-              className={styles.remove}
-              onClick={() => onRemove(item.key)}
-              aria-label={`Remove ${item.title}`}
+          <div className={styles.info}>
+            <span className={styles.title}>{item.title}</span>
+            <span
+              className={
+                item.type === "buy" ? `${styles.type} ${styles.buy}` : styles.type
+              }
             >
-              Remove
-            </button>
-          </li>
-        ))}
-      </ul>
+              {TYPE_LABELS[item.type]}
+            </span>
+          </div>
 
-      <p className={styles.total}>
-        <span>Total</span>
-        <span className={styles.totalPrice}>{formatPrice(total)}</span>
-      </p>
-    </div>
+          <span className={styles.price}>{formatPrice(item.price)}</span>
+
+          <button
+            type="button"
+            className={styles.remove}
+            onClick={() => onRemove(item.key)}
+            aria-label={`Remove ${item.title}`}
+          >
+            <Trash2 size={18} aria-hidden="true" />
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }

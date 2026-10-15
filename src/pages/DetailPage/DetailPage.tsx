@@ -3,6 +3,7 @@
  * button, and renders the movie's content.
  */
 
+import { useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
 import { paths } from "../../routes";
@@ -31,11 +32,17 @@ function parseMovieId(id: string | undefined): number | null {
  *   Arrived from inside the app "back button ->" navigate(-1), back to the catalog with its
  *   search intact. Opened directly (shared link, new tab) "back button -> " go to the catalog,
  *   because navigate(-1) would leave the site.
+ * - Scrolls to the top when the id changes: the router swaps pages without
+ *   scrolling, so a new movie would otherwise open halfway down.
  */
 export default function DetailPage() {
   const { id } = useParams();
 
   const movieId = parseMovieId(id);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [movieId]);
 
   const navigate = useNavigate();
   const location = useLocation();

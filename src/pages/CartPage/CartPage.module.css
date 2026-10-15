@@ -2,25 +2,122 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
-  width: 100%;
-  max-width: 40rem;
-  margin-inline: auto;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
 }
 
 .heading {
   font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.count,
+.saved,
+.note {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+/* Phone: items, then the summary below. Desktop: side by side. */
+.layout {
+  display: grid;
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+/* ================ Order summary ================ */
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-panel);
+}
+
+.summaryTitle {
+  font-size: 1.125rem;
+  margin-bottom: var(--space-xs);
+}
+
+.row,
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-md);
+}
+
+.row {
+  color: var(--color-text-muted);
+}
+
+.totalRow {
+  margin-top: var(--space-sm);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+  font-weight: 700;
+}
+
+.totalPrice {
+  color: var(--color-link);
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.checkout {
+  margin-top: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+.checkout:disabled {
+  cursor: not-allowed;
+}
+
+.note {
+  text-align: center;
 }
 
 .clear {
-  align-self: flex-start;
-  padding: var(--space-sm) var(--space-md);
-  border: 1px solid var(--color-surface-2);
-  border-radius: var(--radius-pill);
+  align-self: center;
+  padding: var(--space-xs) var(--space-sm);
+  border: none;
+  border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--color-text);
+  color: var(--color-danger);
   font-weight: 600;
 }
 
 .clear:hover {
   background: var(--color-surface-2);
+}
+
+@media (min-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr 22rem;
+  }
+
+  .summary {
+    position: sticky;
+    top: 6rem;
+  }
 }

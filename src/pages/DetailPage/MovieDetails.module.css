@@ -4,13 +4,14 @@
   gap: var(--space-xl);
 }
 
-/* ← ── HERO: backdrop behind, content on top ────────────────────────── */
+/* ================ Hero: backdrop behind, content on top ================ */
 
 .hero {
   position: relative;
   overflow: hidden;
   border-radius: var(--radius-lg);
   background: var(--color-surface);
+  box-shadow: var(--shadow-panel);
 }
 
 .backdrop {
@@ -22,33 +23,36 @@
   opacity: 0.35;
 }
 
+/* Phone: poster, info and the price box stacked. The gradient keeps text
+   readable where it overlaps the backdrop. */
 .heroContent {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  display: grid;
   gap: var(--space-lg);
-  padding: var(--space-lg);
-  background: linear-gradient(to top, var(--color-surface) 25%, transparent);
+  padding: var(--space-lg) var(--space-md);
+  background: linear-gradient(to top, var(--color-surface) 45%, transparent);
 }
 
 .poster {
-  width: 45%;
+  width: 50%;
   max-width: 12rem;
   aspect-ratio: 2 / 3;
   object-fit: cover;
   border-radius: var(--radius-md);
   background: var(--color-surface-2);
+  box-shadow: var(--shadow-card);
 }
 
 .info {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
+  min-width: 0;
 }
 
 .title {
   font-size: 1.75rem;
+  font-weight: 800;
 }
 
 .tagline {
@@ -56,7 +60,7 @@
   font-style: italic;
 }
 
-/* ← ── FACTS + GENRES: inline lists without bullets ─────────────────── */
+/* ================ Facts + genres: inline lists without bullets ================ */
 
 .facts,
 .genres {
@@ -70,6 +74,11 @@
 .facts {
   align-items: center;
   color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.star {
+  color: var(--color-accent);
 }
 
 .certification {
@@ -77,54 +86,58 @@
   border: 1px solid currentColor;
   border-radius: var(--radius-sm);
   color: var(--color-text);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .genre {
   padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-pill);
   background: var(--color-surface-2);
   font-size: 0.875rem;
-}
-
-/* ← ── BODY: prices, overview, cast ──────────────────────────────────── */
-
-.body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xl);
+  font-weight: 600;
 }
 
 .overview {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
   max-width: 65ch;
-}
-
-.heading {
-  font-size: 1.25rem;
+  margin-top: var(--space-xs);
 }
 
 .label {
   color: var(--color-text-muted);
 }
 
-/* ← ── TABLET AND UP: poster beside the info ─────────────────────────── */
+/* ================ Tablet: poster beside the info, price box below ================ */
 
 @media (min-width: 768px) {
   .heroContent {
-    flex-direction: row;
-    align-items: flex-end;
+    grid-template-columns: 14rem 1fr;
+    align-items: start;
     padding: var(--space-xl);
   }
 
   .poster {
-    width: 14rem;
+    width: 100%;
     max-width: none;
+  }
+
+  .purchase {
+    grid-column: 1 / -1;
   }
 
   .title {
     font-size: 2.5rem;
+  }
+}
+
+/* ================ Desktop: poster | info | price box, like the design ================ */
+
+@media (min-width: 1200px) {
+  .heroContent {
+    grid-template-columns: 14rem 1fr 20rem;
+  }
+
+  .purchase {
+    grid-column: auto;
   }
 }

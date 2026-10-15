@@ -8,10 +8,9 @@
   font-size: 1.25rem;
 }
 
-
 .list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
   gap: var(--space-md);
   list-style: none;
   padding: 0;
@@ -20,14 +19,20 @@
 .person {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: var(--space-xs);
+  text-align: center;
 }
 
+/* Round photos like the design: a square crop of the portrait, kept to the top
+   so the face stays in frame. */
 .photo {
-  width: 100%;
-  aspect-ratio: 2 / 3;
+  width: 5.5rem;
+  aspect-ratio: 1;
   object-fit: cover;
-  border-radius: var(--radius-md);
+  object-position: top;
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
   background: var(--color-surface-2);
 }
 

@@ -1,27 +1,70 @@
-/* The whole card is one link. height 100% + .body flex 1 + .price margin-top auto
+/* The whole card is one link. height 100% + .body flex 1 + .row margin-top auto
    keep cards in a row equally tall, with the prices lined up at the bottom. */
 .card {
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
+  box-shadow: var(--shadow-card);
   color: var(--color-text);
   text-decoration: none;
-  transition: transform 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .card:hover {
   transform: translateY(calc(-1 * var(--space-xs)));
+  border-color: var(--color-accent);
 }
 
-/* aspect-ratio reserves the poster's space before it loads, so the grid doesn't jump. */
+.media {
+  position: relative;
+}
+
 .poster {
   width: 100%;
   aspect-ratio: 2 / 3;
   object-fit: cover;
   background: var(--color-surface-2);
+}
+
+.badge {
+  position: absolute;
+  top: var(--space-sm);
+  left: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-pill);
+  background: var(--color-success);
+  color: var(--color-on-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Hidden until the card is hovered or focused with the keyboard. */
+.hoverLabel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.card:hover .hoverLabel,
+.card:focus-visible .hoverLabel {
+  opacity: 1;
 }
 
 .body {
@@ -42,16 +85,34 @@
   overflow: hidden;
 }
 
-.meta {
-  display: flex;
-  gap: var(--space-sm);
+.year {
   color: var(--color-text-muted);
   font-size: 0.875rem;
 }
 
-/* --color-link, not --color-accent: yellow text fails contrast on white in light mode. */
-.price {
+.row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
   margin-top: auto;
+  font-size: 0.875rem;
+}
+
+.rating {
+  color: var(--color-text-muted);
+}
+
+.star {
+  color: var(--color-accent);
+}
+
+.price {
+  margin-left: auto;
   color: var(--color-link);
   font-weight: 700;
+}
+
+.from {
+  color: var(--color-text-muted);
+  font-weight: 400;
 }
