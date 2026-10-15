@@ -4,7 +4,14 @@
  */
 
 import { useState } from "react";
-import { Link, NavLink, Outlet } from "react-router";
+import {
+  Link,
+  NavLink,
+  Outlet,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router";
 
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import {
@@ -14,7 +21,13 @@ import {
   selectCartTotalPrice,
 } from "../../features/cart/cartSlice";
 import { paths } from "../../routes";
+import {
+  DEFAULT_FILTERS,
+  parseCatalogFilters,
+  toSearchParams,
+} from "../../utils/catalogFilters";
 import CartDrawer from "../CartDrawer/CartDrawer";
+import SearchBar from "../SearchBar/SearchBar";
 import styles from "./Layout.module.css";
 
 /**
@@ -43,6 +56,23 @@ export default function Layout() {
   const total = useAppSelector(selectCartTotalPrice);
   const dispatch = useAppDispatch();
 
+  const [searchParams] = useSearchParams();
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const isCatalog = location.pathname === paths.catalog;
+  const filters = isCatalog
+    ? parseCatalogFilters(searchParams)
+    : DEFAULT_FILTERS;
+
+  function handleSearch(query: string) {
+    navigate({
+      pathname: paths.catalog,
+      search: toSearchParams({ ...filters, query }).toString(),
+    });
+  }
+
   const cartLabel = count === 1 ? "Cart, 1 item" : `Cart, ${count} items`;
 
   return (
@@ -53,6 +83,10 @@ export default function Layout() {
           <span>Scene</span>
           <span className={styles.logoAccent}>House</span>
         </Link>
+
+        <div className={styles.search}>
+          <SearchBar query={filters.query} onSearch={handleSearch} />
+        </div>
 
         <nav className={styles.nav} aria-label="Main">
           <NavLink to={paths.catalog} end className={navClass}>
@@ -65,8 +99,25 @@ export default function Layout() {
             aria-label={cartLabel}
             aria-haspopup="dialog"
           >
-            <span>Cart</span>
-            {count > 0 && <span className={styles.badge}>{count}</span>}
+            <span className={styles.cartIcon}>
+              <svg
+                viewBox="0 0 24 24"
+                width="22"
+                height="22"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="9" cy="20" r="1.5" />
+                <circle cx="18" cy="20" r="1.5" />
+                <path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 7H6" />
+              </svg>
+              {count > 0 && <span className={styles.badge}>{count}</span>}
+            </span>
+            <span className={styles.cartText}>Cart</span>
           </button>
         </nav>
       </header>
@@ -76,6 +127,11 @@ export default function Layout() {
       </main>
 
       <footer className={styles.footer}>
+        <p className={styles.footerLogo}>
+          <span aria-hidden="true">🎬</span>
+          <span>Scene</span>
+          <span className={styles.logoAccent}>House</span>
+        </p>
         <a
           href="https://www.themoviedb.org"
           target="_blank"
@@ -93,6 +149,9 @@ export default function Layout() {
         <p>
           This product uses the TMDB API but is not endorsed or certified by
           TMDB.
+        </p>
+        <p className={styles.credits}>
+          Movie data from TMDB · School project, 2026
         </p>
       </footer>
 

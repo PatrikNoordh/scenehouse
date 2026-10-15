@@ -16,7 +16,6 @@ import {
   toSearchParams,
 } from "../../utils/catalogFilters";
 
-import SearchBar from "./SearchBar";
 import FilterBar from "./FilterBar";
 import CatalogResults from "./CatalogResults";
 
@@ -52,17 +51,14 @@ export default function CatalogPage() {
     ? `Results for "${filters.query}"`
     : hasActiveFilters(filters)
       ? "Movies"
-      : "Popular movies";
+      : "Popular right now";
+      
 
   return (
     <section className={styles.page}>
       <h1 className={styles.heading}>{heading}</h1>
 
       <div className={styles.controls}>
-        <SearchBar
-          query={filters.query}
-          onSearch={(query) => updateFilters({ query })}
-        />
         <FilterBar
           genreId={filters.genreId}
           sort={filters.sort}
