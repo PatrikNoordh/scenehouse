@@ -4,23 +4,42 @@
   gap: var(--space-lg);
 }
 
+/* Holds the hero's space while the featured movie loads, so the page doesn't jump. */
+.heroPlaceholder {
+  min-height: 22rem;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  animation: pulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.5;
+  }
+}
+
+/* Heading left, sort menu right; the menu wraps below the heading on narrow phones. */
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
 .heading {
   font-size: 1.5rem;
 }
 
-.controls {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-}
-
 @media (min-width: 768px) {
-  .heading {
-    font-size: 2rem;
+  .heroPlaceholder {
+    min-height: 26rem;
   }
 
-  .controls {
-    flex-direction: row;
-    align-items: flex-end;
+  .heading {
+    font-size: 2rem;
   }
 }

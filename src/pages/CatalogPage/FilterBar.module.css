@@ -1,48 +1,53 @@
-.bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: var(--space-md);
+/* The scrolling window around the chips: drag with the mouse (the library),
+   swipe on a trackpad or touch screen, or Tab — the page itself never scrolls
+   sideways. The scrollbar is hidden; the faded right edge shows there is more. */
+.scroller {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  cursor: grab;
+  mask-image: linear-gradient(
+    to right,
+    black calc(100% - var(--space-xl)),
+    transparent
+  );
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  flex: 1 1 10rem;
+.scroller::-webkit-scrollbar {
+  display: none;
 }
 
-.labelText {
+/* One row as wide as all chips together (max-content), so it overflows the
+   scroller instead of shrinking. The padding leaves room for the focus ring,
+   which overflow would otherwise clip. */
+.chips {
+  display: flex;
+  gap: var(--space-sm);
+  width: max-content;
+  padding: var(--space-xs);
+}
+
+.chip {
+  flex: none;
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
   color: var(--color-text-muted);
   font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
-.select {
-  padding: var(--space-sm) var(--space-md);
-  border: 1px solid var(--color-surface-2);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
+.chip:hover {
+  border-color: var(--color-text-muted);
   color: var(--color-text);
 }
 
-.select:disabled {
-  opacity: 0.6;
-}
-
-.clear {
-  padding: var(--space-sm) var(--space-md);
-  border: 1px solid var(--color-surface-2);
-  border-radius: var(--radius-pill);
-  background: transparent;
-  color: var(--color-text);
-}
-
-.clear:hover {
-  background: var(--color-surface-2);
-}
-
-@media (min-width: 768px) {
-  .bar {
-    flex-wrap: nowrap;
-  }
+/* The selected chip — styled from aria-pressed, so the look always matches what
+   screen readers announce. */
+.chip[aria-pressed="true"] {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
 }

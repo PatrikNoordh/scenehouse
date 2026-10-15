@@ -4,13 +4,13 @@
   gap: var(--space-lg);
 }
 
-/* As many columns of at least 160px as fit — 1–2 on a phone, 5–6 on desktop,
-   with no breakpoints needed. */
+/* As many columns as fit — 2 on a phone (140px minimum, so two fit even at
+   360px wide), 5–6 on desktop (160px minimum from tablet up). */
 .grid {
   list-style: none;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: var(--space-md);
 }
 
@@ -39,6 +39,7 @@
 
 @media (min-width: 768px) {
   .grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: var(--space-lg);
   }
 }
