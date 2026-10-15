@@ -1,6 +1,6 @@
 /**
- * The app shell around every page: header with logo, navigation and cart
- * button, the current page, the footer, and the cart drawer.
+ * The app shell around every page: header with logo, search, navigation and
+ * cart button, the current page, the footer, and the cart drawer.
  */
 
 import { useState } from "react";
@@ -47,6 +47,10 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
  * - The cart button's aria-label ("Cart, 2 items") gives screen readers the
  *   count the badge only shows visually.
  * - Whether the drawer is open is UI state, so it lives in useState, not Redux.
+ * - Search: the URL is the only place the search lives. On the catalog the box
+ *   shows the URL's ?q=; on other pages it starts empty (DEFAULT_FILTERS).
+ *   handleSearch always goes to the catalog and keeps the current genre and
+ *   sort when already there.
  */
 export default function Layout() {
   const [isCartOpen, setIsCartOpen] = useState(false);

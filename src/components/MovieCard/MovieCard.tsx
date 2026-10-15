@@ -1,6 +1,7 @@
 /**
- * One movie in a grid: poster, title, year, rating and a "from" price.
- * Presentational — it never fetches and never builds its own link URL.
+ * One movie in a grid: poster, title, year, rating, a "from" price and an
+ * "In cart" badge. Presentational — it never fetches, never reads the cart
+ * and never builds its own link URL.
  */
 
 import { Link } from "react-router";
@@ -26,6 +27,7 @@ type Props = {
  *
  * @param props.movie - The movie to show.
  * @param props.to - The link destination.
+ * @param props.inCart - Shows the "In cart" badge. Optional; defaults to false.
  */
 export default function MovieCard({ movie, to, inCart = false }: Props) {
   const year = movie.releaseDate.slice(0, 4);

@@ -1,4 +1,4 @@
-/* Design tokens — the single source of truth for colors, spacing and radii.
+/* Design tokens — the single source of truth for colors, shadows, spacing and radii.
    Dark is the default theme; light overrides only what changes. */
 
 :root {

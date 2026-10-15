@@ -1,6 +1,6 @@
 /**
- * The catalog's search box: updates on every keystroke, but only reports the
- * search after the user stops typing (debounce).
+ * The site's search box, shown in the navbar on every page: updates on every
+ * keystroke, but only reports the search after the user stops typing (debounce).
  */
 
 import { useEffect, useState } from "react";
@@ -19,8 +19,8 @@ type Props = {
  * onSearch is called only when typing pauses for DEBOUNCE_MS (the effect's
  * cleanup clears the previous timer on each keystroke), or at once on Enter.
  *
- * Sync with the URL: when `query` changes from outside (Back, "Clear filters"),
- * the box is updated during render by comparing with the last query seen —
+ * Sync with the URL: when `query` changes from outside (Back, or opening a page
+ * without a search), the box is updated during render by comparing with the last query seen —
  * React's "adjusting state when a prop changes" pattern. This avoids setState
  * in an effect, and avoids a key remount, which would lose focus while typing.
  * The box is only overwritten when the new query differs from what's typed,
