@@ -41,7 +41,7 @@ import styles from "./CatalogPage.module.css";
  *   fresh results (page 1, old request aborted). The chips and sort menu sit
  *   outside that key, so they keep focus.
  * - Genres are loaded here, outside the keyed results, so they load once.
- * - The hero only shows on the plain catalog (no search, genre or sort):
+ * - The hero only shows on the plain catalog (no search, genre or sort).
  * - The hero reports "rent" / "buy"; the page builds the item with
  *   createCartItem and dispatches it. featuredInCart is derived from the cart
  *   on every render, never stored. featuredMovie is a const, which is why

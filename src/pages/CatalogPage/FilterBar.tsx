@@ -19,7 +19,8 @@ type Props = {
  * - "All" reports null and is how a genre is cleared.
  * - While genres load, or after they failed, `genres` is empty and only "All"
  *   shows — the catalog keeps working without them.
- * - The row scrolls sideways inside ScrollContainer (react-indiana-drag-scroll):
+ * - The row scrolls sideways inside ScrollContainer (react-indiana-drag-scroll),
+ *   so the mouse can drag it.
  * - hideScrollbars={false}: the library's own hiding sets overflow: hidden,
  *   which would block trackpad and touch scrolling; the CSS hides the bar instead.
  * - role and aria-label sit on the inner div, because ScrollContainer's props

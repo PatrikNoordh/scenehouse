@@ -5,14 +5,15 @@
    The flex layout lives on .panel instead. */
 .drawer {
   margin: 0 0 0 auto;
-  width: min(100%, 24rem);
+  width: min(100%, 26rem);
   max-width: 100%;
   height: 100dvh;
   max-height: 100dvh;
   padding: 0;
   border: none;
-  border-left: 1px solid var(--color-surface-2);
+  border-left: 1px solid var(--color-border);
   background: var(--color-surface);
+  box-shadow: var(--shadow-panel);
   color: var(--color-text);
 }
 
@@ -21,7 +22,7 @@
 }
 
 .drawer::backdrop {
-  background: color-mix(in srgb, var(--color-bg) 70%, transparent);
+  background: var(--color-overlay);
 }
 
 @keyframes slide-in {
@@ -33,7 +34,7 @@
   }
 }
 
-/* ================ Panel — the content inside ================ */
+/* ================ Panel — header, scrolling items, fixed footer ================ */
 
 .panel {
   display: flex;
@@ -41,8 +42,6 @@
   gap: var(--space-md);
   height: 100%;
   padding: var(--space-md);
-  overflow-y: auto;
-  overscroll-behavior: contain;
 }
 
 .header {
@@ -53,36 +52,82 @@
 
 .title {
   font-size: 1.25rem;
+  font-weight: 800;
 }
 
 .close {
-  padding: var(--space-xs) var(--space-sm);
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  aspect-ratio: 1;
   border: none;
   border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--color-text-muted);
-  font-size: 1.25rem;
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  font-size: 1rem;
   line-height: 1;
 }
 
 .close:hover {
-  background: var(--color-surface-2);
-  color: var(--color-text);
+  background: var(--color-border);
 }
 
-/* ================ "Go to cart" — a link styled as the primary button ================ */
+/* Only the items scroll; min-height 0 lets this flex child shrink below its
+   content, which is what makes overflow work inside a flex column. */
+.items {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
 
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-weight: 600;
+}
+
+.totalPrice {
+  color: var(--color-link);
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+/* "Go to cart" — a link styled as the primary button. */
 .goToCart {
   display: block;
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-pill);
   background: var(--color-accent);
   color: var(--color-on-accent);
-  font-weight: 600;
+  font-weight: 700;
   text-align: center;
   text-decoration: none;
 }
 
 .goToCart:hover {
   background: var(--color-accent-hi);
+  box-shadow: var(--shadow-glow);
+}
+
+.continue {
+  padding: var(--space-sm);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-link);
+  font-weight: 600;
+}
+
+.continue:hover {
+  text-decoration: underline;
 }

@@ -9,7 +9,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import type { Movie } from "../../types/tmdb";
-import { getBuyPrice, getRentPrice } from "../../utils/pricing";
+import { getBuyPrice, getRentPrice, sumPrices } from "../../utils/pricing";
 
 // Type-only import: erased at build time, so store.ts importing this file's
 // reducer doesn't create a runtime import cycle.
@@ -104,7 +104,7 @@ export const selectCartItems = (state: RootState) => state.cart.items;
 export const selectCartCount = (state: RootState) => state.cart.items.length;
 
 export const selectCartTotalPrice = (state: RootState) =>
-  state.cart.items.reduce((sum, item) => sum + item.price, 0);
+  sumPrices(state.cart.items);
 
 /**
  * A selector factory: returns a selector for one movie. Needed because
