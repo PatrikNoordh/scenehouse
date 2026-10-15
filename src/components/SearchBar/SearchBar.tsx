@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { Search } from "lucide-react";
 import styles from "./SearchBar.module.css";
 
 // How long typing must pause before searching — skips in-between words.
@@ -61,20 +62,7 @@ export default function SearchBar({ query, onSearch }: Props) {
         Search movies
       </label>
 
-      <svg
-        className={styles.icon}
-        viewBox="0 0 24 24"
-        width="18"
-        height="18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        aria-hidden="true"
-      >
-        <circle cx="11" cy="11" r="7" />
-        <path d="m20 20-4.35-4.35" />
-      </svg>
+      <Search className={styles.icon} size={18} aria-hidden="true" />
 
       <input
         id="movie-search"

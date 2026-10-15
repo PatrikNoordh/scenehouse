@@ -4,6 +4,7 @@
  */
 
 import { useState } from "react";
+import { ShoppingCart } from "lucide-react";
 import {
   Link,
   NavLink,
@@ -104,21 +105,7 @@ export default function Layout() {
             aria-haspopup="dialog"
           >
             <span className={styles.cartIcon}>
-              <svg
-                viewBox="0 0 24 24"
-                width="22"
-                height="22"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <circle cx="9" cy="20" r="1.5" />
-                <circle cx="18" cy="20" r="1.5" />
-                <path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 7H6" />
-              </svg>
+              <ShoppingCart size={22} aria-hidden="true" />
               {count > 0 && <span className={styles.badge}>{count}</span>}
             </span>
             <span className={styles.cartText}>Cart</span>
