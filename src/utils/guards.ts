@@ -14,8 +14,8 @@
  * @param value - Anything, typically parsed JSON.
  * @returns true if value can be read with the read* functions below.
  */
-export function isRecord(value: unknown): value is Record<string,unknown> {
-    return typeof value === 'object' && value !== null && !Array.isArray(value);
+export function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 /**
@@ -25,8 +25,8 @@ export function isRecord(value: unknown): value is Record<string,unknown> {
  * @returns The string, or '' if it is missing or not a string.
  */
 export function readString(obj: Record<string, unknown>, key: string): string {
-    const value = obj[key];
-    return typeof value === 'string' ? value : '';
+  const value = obj[key];
+  return typeof value === "string" ? value : "";
 }
 
 /**
@@ -35,9 +35,12 @@ export function readString(obj: Record<string, unknown>, key: string): string {
  * @param key - The field to read.
  * @returns The string, or null if it is missing, null, '' or not a string.
  */
-export function readNullableString(obj: Record<string, unknown>, key: string): string | null {
-    const value = obj[key];
-    return typeof value === 'string' && value !== '' ? value : null;
+export function readNullableString(
+  obj: Record<string, unknown>,
+  key: string,
+): string | null {
+  const value = obj[key];
+  return typeof value === "string" && value !== "" ? value : null;
 }
 
 /**
@@ -48,8 +51,8 @@ export function readNullableString(obj: Record<string, unknown>, key: string): s
  * @returns The number, or 0 if it is missing, not a number, NaN or Infinity.
  */
 export function readNumber(obj: Record<string, unknown>, key: string): number {
-    const value = obj[key];
-    return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+  const value = obj[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
 }
 
 /**
@@ -58,9 +61,12 @@ export function readNumber(obj: Record<string, unknown>, key: string): number {
  * @param key - The field to read.
  * @returns The boolean, or false if it is missing or not a boolean.
  */
-export function readBoolean(obj: Record<string, unknown>, key: string): boolean {
+export function readBoolean(
+  obj: Record<string, unknown>,
+  key: string,
+): boolean {
   const value = obj[key];
-  return typeof value === 'boolean' ? value : false;
+  return typeof value === "boolean" ? value : false;
 }
 
 /**
@@ -69,9 +75,12 @@ export function readBoolean(obj: Record<string, unknown>, key: string): boolean 
  * @param key - The field to read.
  * @returns The object, or {} (empty but safe to read) if it is not a plain object.
  */
-export function readRecord(obj: Record<string, unknown>, key: string): Record<string, unknown> {
+export function readRecord(
+  obj: Record<string, unknown>,
+  key: string,
+): Record<string, unknown> {
   const value = obj[key];
-  return isRecord(value) ? value : {}; 
+  return isRecord(value) ? value : {};
 }
 
 /**
@@ -81,7 +90,39 @@ export function readRecord(obj: Record<string, unknown>, key: string): Record<st
  * @param key - The field to read.
  * @returns The array, or [] if it is missing or not an array.
  */
-export function readArray(obj: Record<string, unknown>, key: string): unknown[] {
+export function readArray(
+  obj: Record<string, unknown>,
+  key: string,
+): unknown[] {
   const value = obj[key];
   return Array.isArray(value) ? value : [];
+}
+
+/**
+ * Reads an optional number, where "missing" must not become 0 (a year or a rating).
+ * @param obj - A checked object (see isRecord).
+ * @param key - The field to read.
+ * @returns The number, or null if it is missing, not a number, NaN or Infinity.
+ */
+export function readNullableNumber(
+  obj: Record<string, unknown>,
+  key: string,
+): number | null {
+  const value = obj[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+/**
+ * Reads a list of texts, dropping every item that isn't a string.
+ * @param obj - A checked object (see isRecord).
+ * @param key - The field to read.
+ * @returns The strings, or [] if the field is missing or not an array.
+ */
+export function readStringArray(
+  obj: Record<string, unknown>,
+  key: string,
+): string[] {
+  return readArray(obj, key).filter(
+    (item): item is string => typeof item === "string",
+  );
 }

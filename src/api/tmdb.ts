@@ -13,6 +13,7 @@ import type {
   CastMember,
   CrewMember,
   DiscoverFilters,
+  DiscoverQuery,
   Genre,
   ImageSize,
   Movie,
@@ -466,6 +467,39 @@ export async function discoverMovies(
   return normalizePage(raw, normalizeMovie);
 }
 
+/**
+ * Discover movies by MovieAI's criteria: several genres (AND), a year range,
+ * a minimum rating and a director. Missing criteria are left out of the request.
+ * At least 50 votes, so almost-unknown titles don't fill the answer.
+ * @param query - The criteria, already as TMDb ids.
+ * @param signal - Lets the caller cancel the request.
+ */
+export async function discoverByQuery(
+  query: DiscoverQuery,
+  signal?: AbortSignal,
+): Promise<PagedResponse<Movie>> {
+  const params: QueryParams = {
+    sort_by: SORT_PARAMS[query.sort],
+    include_adult: "false",
+    "vote_count.gte": 50,
+  };
+
+  if (query.genreIds.length > 0) params.with_genres = query.genreIds.join(",");
+
+  if (query.yearFrom !== null)
+    params["primary_release_date.gte"] = `${query.yearFrom}-01-01`;
+  if (query.yearTo !== null)
+    params["primary_release_date.lte"] = `${query.yearTo}-12-31`;
+
+  if (query.minRating !== null) params["vote_average.gte"] = query.minRating;
+
+  if (query.crewId !== null) params.with_crew = query.crewId;
+
+  const raw = await tmdbFetch("/discover/movie", params, signal);
+
+  return normalizePage(raw, normalizeMovie);
+}
+
 // The detail request's extra parameter, written once: getMovieDetails sends it
 // and peekMovieDetails looks up with it, so their cache keys always match.
 const DETAIL_PARAMS: QueryParams = {
@@ -498,7 +532,7 @@ export async function getMovieDetails(
  * @returns The cached MovieDetails, or null.
  */
 export function peekMovieDetails(id: number): MovieDetails | null {
-  const raw = cache.get(buildCacheKey(`/movie/${id}`, DETAIL_PARAMS))
+  const raw = cache.get(buildCacheKey(`/movie/${id}`, DETAIL_PARAMS));
 
   if (raw === undefined) return null;
 

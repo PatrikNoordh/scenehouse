@@ -74,6 +74,16 @@ export type DiscoverFilters = {
   sort: SortOption;
 };
 
+// MovieAI's discover criteria, already as TMDb ids. null / [] = no limit.
+export type DiscoverQuery = {
+  genreIds: number[];
+  yearFrom: number | null;
+  yearTo: number | null;
+  minRating: number | null;
+  crewId: number | null;
+  sort: SortOption;
+};
+
 // What the user picked in the catalog; stored in the URL as ?q=&genre=&sort=.
 // query '' = not searching.
 export type CatalogFilters = DiscoverFilters & {
