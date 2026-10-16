@@ -68,6 +68,7 @@ export function parseMovieQuery(raw: unknown): MovieQuery {
     yearFrom: readNullableNumber(raw, "yearFrom"),
     yearTo: readNullableNumber(raw, "yearTo"),
     director: readNullableString(raw, "director"),
+    actor: readNullableString(raw, "actor"),
     minRating: readNullableNumber(raw, "minRating"),
     sortBy: toSort(readNullableString(raw, "sortBy")),
     titleQuery: readNullableString(raw, "titleQuery"),
@@ -128,7 +129,7 @@ function toGenreIds(names: string[], genres: Genre[]): number[] {
 }
 
 /**
- * @param name - A person's name, e.g. a director.
+ * @param name - A person's name, e.g. a director or an actor.
  * @param signal - Lets the caller cancel the request.
  * @returns TMDb's best match's id, or null if nobody was found.
  */
@@ -142,8 +143,8 @@ async function findPersonId(
 
 /**
  * Picks one strategy: "similar to" → that movie's recommendations; a title →
- * title search; otherwise discover by genres, years, rating and director.
- * An unknown director gives no movies instead of ignoring the director.
+ * title search; otherwise discover by genres, years, rating, director and actor.
+ * An unknown director or actor gives no movies instead of being ignored.
  * @param query - The checked criteria.
  * @param signal - Lets the caller cancel the requests.
  */
@@ -173,6 +174,11 @@ async function findMovies(
 
   if (query.director !== null && crewId === null) return [];
 
+  const castId =
+    query.actor !== null ? await findPersonId(query.actor, signal) : null;
+
+  if (query.actor !== null && castId === null) return [];
+
   const page = await discoverByQuery(
     {
       genreIds: toGenreIds(query.genres, genres),
@@ -180,6 +186,7 @@ async function findMovies(
       yearTo: query.yearTo,
       minRating: query.minRating,
       crewId,
+      castId,
       sort: query.sortBy ?? "popular",
     },
     signal,

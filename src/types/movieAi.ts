@@ -16,6 +16,7 @@ export type MovieQuery = {
   yearFrom: number | null;
   yearTo: number | null;
   director: string | null;
+  actor: string | null;
   minRating: number | null;
   sortBy: MovieAiSort | null;
   titleQuery: string | null;
@@ -27,3 +28,29 @@ export type MovieAiAnswer = {
   reply: string;
   movies: Movie[];
 };
+
+// ==== Chat messages — one type per kind of bubble, told apart by `role` ====
+
+export type UserMessage = {
+  id: string;
+  role: "user";
+  text: string;
+};
+
+// movies: [] = MovieAI answered, but TMDb found nothing.
+export type AssistantMessage = {
+  id: string;
+  role: "assistant";
+  text: string;
+  movies: Movie[];
+};
+
+// Remembers the failed question and its bubble, so "Try again" can resend it.
+export type ErrorMessage = {
+  id: string;
+  role: "error";
+  question: string;
+  questionId: string;
+};
+
+export type ChatMessage = UserMessage | AssistantMessage | ErrorMessage;

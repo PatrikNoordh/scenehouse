@@ -80,7 +80,8 @@ export type DiscoverQuery = {
   yearFrom: number | null;
   yearTo: number | null;
   minRating: number | null;
-  crewId: number | null;
+  crewId: number | null; // a director (crew)
+  castId: number | null; // an actor (cast)
   sort: SortOption;
 };
 
