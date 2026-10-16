@@ -49,6 +49,7 @@ Turn the visitor's request into search criteria and answer only with JSON that m
 - genres: only names from this list: ${GENRES.join(", ")}. Use [] if no genre is asked for.
 - yearFrom / yearTo: whole years or null. "the 2020s" means 2020 to 2029.
 - director: the director's full name, or null.
+- actor: an actor's or actress's full name when the visitor asks for movies with them, or null. Fix obvious misspellings ("swarzenegger" → "Arnold Schwarzenegger").
 - minRating: a number from 0 to 10, or null. "rated above 7" means 7.
 - sortBy: "popular", "rating" or "newest", or null.
 - titleQuery: only when the visitor looks for a specific title, otherwise null.
@@ -63,6 +64,7 @@ const RESPONSE_SCHEMA = {
     yearFrom: { type: "INTEGER", nullable: true },
     yearTo: { type: "INTEGER", nullable: true },
     director: { type: "STRING", nullable: true },
+    actor: { type: "STRING", nullable: true },
     minRating: { type: "NUMBER", nullable: true },
     sortBy: {
       type: "STRING",
@@ -78,6 +80,7 @@ const RESPONSE_SCHEMA = {
     "yearFrom",
     "yearTo",
     "director",
+    "actor",
     "minRating",
     "sortBy",
     "titleQuery",

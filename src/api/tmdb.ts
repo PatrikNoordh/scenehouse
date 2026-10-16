@@ -469,7 +469,7 @@ export async function discoverMovies(
 
 /**
  * Discover movies by MovieAI's criteria: several genres (AND), a year range,
- * a minimum rating and a director. Missing criteria are left out of the request.
+ * a minimum rating, a director and an actor. Missing criteria are left out of the request.
  * At least 50 votes, so almost-unknown titles don't fill the answer.
  * @param query - The criteria, already as TMDb ids.
  * @param signal - Lets the caller cancel the request.
@@ -494,6 +494,8 @@ export async function discoverByQuery(
   if (query.minRating !== null) params["vote_average.gte"] = query.minRating;
 
   if (query.crewId !== null) params.with_crew = query.crewId;
+
+  if (query.castId !== null) params.with_cast = query.castId;
 
   const raw = await tmdbFetch("/discover/movie", params, signal);
 
