@@ -16,11 +16,14 @@ import {
 
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import {
+  addItem,
+  createCartItem,
   removeItem,
   selectCartCount,
   selectCartItems,
   selectCartTotalPrice,
 } from "../../features/cart/cartSlice";
+import { useMovieAi } from "../../hooks/useMovieAi";
 import { paths } from "../../routes";
 import {
   DEFAULT_FILTERS,
@@ -28,6 +31,7 @@ import {
   toSearchParams,
 } from "../../utils/catalogFilters";
 import CartDrawer from "../CartDrawer/CartDrawer";
+import ChatWidget from "../ChatWidget/ChatWidget";
 import SearchBar from "../SearchBar/SearchBar";
 import styles from "./Layout.module.css";
 
@@ -52,6 +56,8 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
  *   shows the URL's ?q=; on other pages it starts empty (DEFAULT_FILTERS).
  *   handleSearch always goes to the catalog and keeps the current genre and
  *   sort when already there.
+ * - MovieAI: the conversation (useMovieAi) lives here, so it survives page
+ *   changes. Rent in the chat dispatches the same addItem as the detail page.
  */
 export default function Layout() {
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -60,6 +66,9 @@ export default function Layout() {
   const count = useAppSelector(selectCartCount);
   const total = useAppSelector(selectCartTotalPrice);
   const dispatch = useAppDispatch();
+
+  const movieAi = useMovieAi();
+  const cartMovieIds = new Set(items.map((item) => item.movieId));
 
   const [searchParams] = useSearchParams();
 
@@ -154,6 +163,16 @@ export default function Layout() {
         onRemove={(key) => dispatch(removeItem(key))}
         cartPath={paths.cart}
         catalogPath={paths.catalog}
+      />
+
+      <ChatWidget
+        messages={movieAi.messages}
+        isThinking={movieAi.isThinking}
+        cartMovieIds={cartMovieIds}
+        onAsk={movieAi.ask}
+        onRetry={movieAi.retry}
+        onRent={(movie) => dispatch(addItem(createCartItem(movie, "rent")))}
+        moviePath={paths.movie}
       />
     </div>
   );

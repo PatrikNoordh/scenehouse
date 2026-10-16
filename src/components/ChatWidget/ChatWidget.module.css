@@ -1,0 +1,345 @@
+/* ================ Floating button ================ */
+
+/* Phone: a round icon button. Tablet and up: a pill with "Ask MovieAI". */
+.launcher {
+  position: fixed;
+  right: var(--space-md);
+  bottom: var(--space-md);
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  aspect-ratio: 1;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  box-shadow: var(--shadow-glow);
+  font-weight: 700;
+}
+
+.launcher:hover {
+  background: var(--color-accent-hi);
+}
+
+.launcherText {
+  display: none;
+}
+
+/* ================ Panel — full screen on a phone ================ */
+
+/* No display property here: the browser hides a closed dialog with
+   display: none, and setting display would keep it visible when closed.
+   The flex layout lives on .inner instead. */
+.panel {
+  width: 100%;
+  max-width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.panel[open] {
+  animation: rise 200ms ease-out;
+}
+
+.panel::backdrop {
+  background: transparent;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-lg));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ================ Header ================ */
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  aspect-ratio: 1;
+  margin-left: auto;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  color: var(--color-text);
+}
+
+.close:hover {
+  background: var(--color-border);
+}
+
+/* ================ Messages — only this part scrolls ================ */
+
+.messages {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.welcome {
+  margin-block: auto;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.user {
+  align-self: flex-end;
+  max-width: 85%;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-lg);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.assistant {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.bubble,
+.thinking {
+  align-self: flex-start;
+  max-width: 85%;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-sm);
+  background: var(--color-surface-2);
+}
+
+.thinking {
+  color: var(--color-text-muted);
+  font-style: italic;
+  animation: pulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.5;
+  }
+}
+
+/* The cards scroll sideways inside the answer, never the panel: drag with the
+   mouse, swipe, or Tab. The scrollbar is hidden; the faded right edge shows
+   there is more. */
+.scroller {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  cursor: grab;
+  mask-image: linear-gradient(
+    to right,
+    black calc(100% - var(--space-xl)),
+    transparent
+  );
+}
+
+.scroller::-webkit-scrollbar {
+  display: none;
+}
+
+/* As wide as all cards together, so it overflows the scroller instead of
+   shrinking. The padding leaves room for the focus ring. */
+.movies {
+  display: flex;
+  gap: var(--space-sm);
+  width: max-content;
+  padding: var(--space-xs);
+  list-style: none;
+}
+
+.empty {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.error {
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  max-width: 85%;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-lg);
+}
+
+.retry {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-danger);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.retry:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ================ Suggestions + input ================ */
+
+.suggestions {
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-md);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.suggestions::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex: none;
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chip:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+.chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.form {
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.send {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ================ Tablet and up: a floating panel, bottom right ================ */
+
+@media (min-width: 768px) {
+  .launcher {
+    display: flex;
+    gap: var(--space-sm);
+    width: auto;
+    aspect-ratio: auto;
+    padding: var(--space-sm) var(--space-lg);
+    right: var(--space-lg);
+    bottom: var(--space-lg);
+  }
+
+  .launcherText {
+    display: inline;
+  }
+
+  .panel {
+    width: 25rem;
+    height: min(37.5rem, calc(100dvh - 2 * var(--space-lg)));
+    margin: auto var(--space-lg) var(--space-lg) auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-panel);
+  }
+}
