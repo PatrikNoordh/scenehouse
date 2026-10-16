@@ -1,0 +1,37 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  color: var(--color-text);
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* --color-link is yellow in the dark theme and navy in the light theme, so the
+   mark and "House" keep enough contrast on both backgrounds. */
+.mark {
+  flex: none;
+  color: var(--color-link);
+}
+
+.accent {
+  color: var(--color-link);
+}
+
+.md {
+  font-size: 1.25rem;
+}
+
+.md .mark {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.lg {
+  font-size: 2rem;
+}
+
+.lg .mark {
+  width: 2.75rem;
+  height: 2.75rem;
+}

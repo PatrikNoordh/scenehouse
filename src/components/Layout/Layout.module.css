@@ -26,17 +26,9 @@
 
 .logo {
   grid-area: logo;
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--color-text);
+  justify-self: start;
+  border-radius: var(--radius-sm);
   text-decoration: none;
-}
-
-.logoAccent {
-  color: var(--color-accent);
 }
 
 .search {
@@ -142,11 +134,6 @@
 
 .footerLogo {
   display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  color: var(--color-text);
-  font-size: 1rem;
-  font-weight: 800;
 }
 
 .credits {
