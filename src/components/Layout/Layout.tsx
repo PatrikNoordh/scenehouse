@@ -32,6 +32,7 @@ import {
 } from "../../utils/catalogFilters";
 import CartDrawer from "../CartDrawer/CartDrawer";
 import ChatWidget from "../ChatWidget/ChatWidget";
+import Logo from "../Logo/Logo";
 import SearchBar from "../SearchBar/SearchBar";
 import styles from "./Layout.module.css";
 
@@ -48,6 +49,7 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
  * is open. The drawer itself only receives props and reports back.
  * - Reading the cart through selectors re-renders the header whenever the cart
  *   changes, so the badge updates the moment an item is added or removed.
+ * - The logo link is named "SceneHouse, home", so screen readers say where it goes.
  * - The badge only renders when count > 0.
  * - The cart button's aria-label ("Cart, 2 items") gives screen readers the
  *   count the badge only shows visually.
@@ -92,10 +94,12 @@ export default function Layout() {
   return (
     <div className={styles.shell}>
       <header className={styles.header}>
-        <Link to={paths.catalog} className={styles.logo}>
-          <span aria-hidden="true">🎬</span>
-          <span>Scene</span>
-          <span className={styles.logoAccent}>House</span>
+        <Link
+          to={paths.catalog}
+          className={styles.logo}
+          aria-label="SceneHouse, home"
+        >
+          <Logo />
         </Link>
 
         <div className={styles.search}>
@@ -128,9 +132,7 @@ export default function Layout() {
 
       <footer className={styles.footer}>
         <p className={styles.footerLogo}>
-          <span aria-hidden="true">🎬</span>
-          <span>Scene</span>
-          <span className={styles.logoAccent}>House</span>
+          <Logo />
         </p>
         <a
           href="https://www.themoviedb.org"

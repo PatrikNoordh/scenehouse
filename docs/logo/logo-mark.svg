@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="SceneHouse">
+  <g fill="none" stroke="#FFC300" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M42 15 V9 H48 V21"/>
+    <path d="M6 31 L32 8 L58 31"/>
+    <path d="M13 26 V55 H51 V26"/>
+  </g>
+  <path d="M27 31 V47 L40.5 39 Z" fill="#FFC300" stroke="#FFC300" stroke-width="3" stroke-linejoin="round"/>
+</svg>
