@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 /**
  * POST /api/ask — a Vercel server function. Reads LLM_API_KEY (server only,
  * never in the browser bundle), asks Gemini to turn a visitor's question into
